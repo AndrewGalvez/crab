@@ -3,7 +3,9 @@
 #include "utils.hpp"
 
 int main() {
-  InitWindow(600, 400, "Peanut Butter");
+  SetTraceLogLevel(LOG_WARNING);
+
+  InitWindow(600, 450, "Peanut Butter");
 
   SetTargetFPS(24);
 

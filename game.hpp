@@ -1,6 +1,7 @@
 #pragma once
 #include "game_assets.hpp"
 #include "game_runner.hpp"
+#include "game_settings.hpp"
 #include "game_state.hpp"
 #include "game_ui.hpp"
 #include "menus.hpp"
@@ -8,11 +9,14 @@
 
 class Game {
 private:
+  GameSettings settings;
+
   GameUI ui;
   GameState state;
   GameAssets assets;
   GameRunner runner;
   MainMenu main_menu;
+  SettingsMenu settings_menu;
 
   MusicManager m_manager;
 
@@ -21,17 +25,24 @@ private:
 
 public:
   Game() {
+    settings.loadFromFile("data/settings");
     ui.setRunner(&this->runner);
     state = GAME_STATE_MAIN_MENU;
     assets.loadAssets();
-    m_manager.swapTrack("menu");
-    m_manager.currentTrack.startMusic(&assets);
+    if (settings.musicEnabled) {
+      m_manager.swapTrack("menu");
+      m_manager.currentTrack.startMusic(&assets);
+    }
+    settings_menu.music_enabled_checkbox.checked = settings.musicEnabled;
   }
 
   void draw() {
     switch (state) {
     case GAME_STATE_MAIN_MENU:
       main_menu.draw(&assets, frameIncrementTimer);
+      break;
+    case GAME_STATE_SETTINGS:
+      settings_menu.draw(&assets, frameIncrementTimer);
       break;
     case GAME_STATE_IN_GAME:
       ui.draw(&assets, frameIncrementTimer);
@@ -54,7 +65,8 @@ public:
       frameIncrementTimer = 0;
     }
 
-    m_manager.currentTrack.updateMusic(&assets);
+    if (settings.musicEnabled)
+      m_manager.currentTrack.updateMusic(&assets);
 
     GameState last_state = state;
 
@@ -65,13 +77,15 @@ public:
     case GAME_STATE_IN_GAME:
       runner.update();
       break;
+    case GAME_STATE_SETTINGS:
+      settings_menu.update(&assets, &state, &settings);
+      break;
     case GAME_STATE_DEAD:
       break;
     case GAME_STATE_SHOP:
       break;
     }
-
-    if (last_state != state) {
+    if (last_state != state && settings.musicEnabled) {
       if (last_state == GAME_STATE_IN_GAME) {
         m_manager.currentTrack.stopMusic(&assets);
         m_manager.swapTrack("menu");
