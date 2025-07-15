@@ -1,0 +1,8 @@
+#pragma once
+
+enum GameState {
+  GAME_STATE_MAIN_MENU,
+  GAME_STATE_IN_GAME,
+  GAME_STATE_DEAD,
+  GAME_STATE_SHOP
+};
