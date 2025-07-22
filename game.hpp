@@ -22,6 +22,7 @@ private:
 
   int frame = 0;
   int frameIncrementTimer = 0;
+  int freezeFrames = 0;
 
 public:
   Game() {
@@ -45,8 +46,8 @@ public:
       settings_menu.draw(&assets, frameIncrementTimer);
       break;
     case GAME_STATE_IN_GAME:
+      runner.draw(&assets, frameIncrementTimer, freezeFrames);
       ui.draw(&assets, frameIncrementTimer);
-      runner.draw(&assets, frameIncrementTimer);
       break;
     case GAME_STATE_SHOP:
       break;
@@ -57,11 +58,11 @@ public:
 
   void update(bool *should_exit) {
     frame++;
-    if (frame > 4) {
+    if (frame > 12) {
       frameIncrementTimer++;
       frame = 0;
     }
-    if (frameIncrementTimer > 31) {
+    if (frameIncrementTimer > 3) {
       frameIncrementTimer = 0;
     }
 
@@ -75,7 +76,12 @@ public:
       main_menu.update(&assets, &state, &should_exit);
       break;
     case GAME_STATE_IN_GAME:
-      runner.update();
+      if (freezeFrames > 0) {
+        freezeFrames--;
+        return;
+      }
+      runner.update(assets, freezeFrames, state);
+      ui.update();
       break;
     case GAME_STATE_SETTINGS:
       settings_menu.update(&assets, &state, &settings);
@@ -85,6 +91,10 @@ public:
     case GAME_STATE_SHOP:
       break;
     }
+
+    if (last_state != GAME_STATE_IN_GAME && state == GAME_STATE_IN_GAME)
+      runner.startLevel();
+
     if (last_state != state && settings.musicEnabled) {
       if (last_state == GAME_STATE_IN_GAME) {
         m_manager.currentTrack.stopMusic(&assets);

@@ -19,3 +19,10 @@ inline void DrawRenderTexture(RenderTexture2D target, int targetWidth,
       {(float)offsetX, (float)offsetY, (float)renderWidth, (float)renderHeight},
       {0, 0}, 0, WHITE);
 }
+
+inline int dist(Vector2 a, Vector2 b) {
+  int c = a.x - b.x;
+  int d = a.y - b.y;
+
+  return (c * c + d * d);
+}

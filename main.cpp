@@ -7,7 +7,7 @@ int main() {
 
   InitWindow(600, 450, "Peanut Butter");
 
-  SetTargetFPS(24);
+  SetTargetFPS(60);
 
   SetWindowState(FLAG_WINDOW_RESIZABLE);
   InitAudioDevice();

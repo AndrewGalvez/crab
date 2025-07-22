@@ -19,14 +19,14 @@ private:
 
   GUIButton start_button =
       GUIButton(10, 80, 150, 40, GRAY, DARKGRAY, false,
-                GUIText(85, 90, 24, "Start Game", BLACK, true), true);
+                GUIText(85, 90, 21, "START GAME", BLACK, true), true);
   GUIButton quit_button =
       GUIButton(10, 130, 150, 40, GRAY, DARKGRAY, false,
-                GUIText(85, 140, 24, "Quit Game", BLACK, true));
+                GUIText(85, 140, 24, "QUIT GAME", BLACK, true));
 
   GUIButton settings_button =
       GUIButton(165, 80, 150, 40, GRAY, DARKGRAY, false,
-                GUIText(240, 90, 24, "Settings", BLACK, true));
+                GUIText(240, 90, 24, "SETTINGS", BLACK, true));
 
 public:
   void draw(GameAssets *game_assets, int frame) {
@@ -54,16 +54,19 @@ public:
   };
 
   void update(GameAssets *assets, GameState *state, bool **should_exit) {
-    if (start_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    if (start_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ||
+        IsKeyPressed(KEY_S)) {
       *state = GAME_STATE_IN_GAME;
       PlaySound(*assets->fetchSound("select"));
     }
-    if (quit_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    if (quit_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ||
+        IsKeyPressed(KEY_Q)) {
       **should_exit = true;
       PlaySound(*assets->fetchSound("select"));
     }
     if (settings_button.isMouseOn() &&
-        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ||
+        IsKeyPressed(KEY_E)) {
       *state = GAME_STATE_SETTINGS;
       PlaySound(*assets->fetchSound("select"));
     }

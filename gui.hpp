@@ -32,6 +32,8 @@ public:
   void setColor(Color color) { this->clr = color; }
 
   void setDrawCentered(bool x) { draw_centered = x; }
+
+  void setValue(const char *n) { value = n; }
 };
 
 class GUIButton {
