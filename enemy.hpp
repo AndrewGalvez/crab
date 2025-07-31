@@ -276,3 +276,26 @@ public:
   int getPathIndex() const { return pathIndex; }
   int getPathSize() const { return path.size(); }
 };
+
+class EnemyDeath {
+private:
+  int x;
+  int y;
+  int w = 32;
+  int h = 32;
+  int frame = 0;
+
+public:
+  EnemyDeath(int x, int y) : x(x), y(y) {}
+
+  void draw(GameAssets *assets) {
+    DrawTexturePro(*assets->fetchTexture("enemy"),
+                   {(float)16 * frame, (float)32, 16, 16},
+                   (Rectangle){(float)x, (float)y, (float)w, (float)h}, {0, 0},
+                   0.0f, WHITE);
+  }
+
+  void incrementFrame() { frame++; }
+
+  bool dead() { return frame > 4; }
+};

@@ -16,10 +16,10 @@
 class GameRunner {
 private:
   std::vector<Enemy> enemies = {};
+  std::vector<EnemyDeath> enemydeaths = {};
   GameMap map;
   Camera2D cam;
   Vector2 camoffsetbase;
-
   Vector2 screenShake = {0, 0};
   int freezeFrames = 0;
 
@@ -67,7 +67,7 @@ public:
     }
   }
 
-  void draw(GameAssets *assets, int frame) {
+  void draw(GameAssets *assets, int frame, int f2) {
     BeginMode2D(cam);
     map.draw();
     p.draw(assets->fetchTexture("crab"), frame, &cam, map.size, freezeFrames,
@@ -76,6 +76,11 @@ public:
 
     for (Enemy &e : enemies) {
       e.draw(assets, frame);
+    }
+    for (EnemyDeath &ed : enemydeaths) {
+      if (f2 == 0)
+        ed.incrementFrame();
+      ed.draw(assets);
     }
     for (Bullet &b : bullets) {
       b.draw();
@@ -99,7 +104,6 @@ public:
     Vector2 spawnPos = Vector2Add(origin, sOffset);
     bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir));
   }
-
   void update(GameAssets &assets, GameState &state) {
     if (freezeFrames > 0) {
       freezeFrames--;
@@ -108,16 +112,16 @@ public:
       cam.offset.x = camoffsetbase.x + screenShake.x;
       cam.offset.y = camoffsetbase.y + screenShake.y;
       return;
+    } else {
+      cam.offset.x = camoffsetbase.x;
+      cam.offset.y = camoffsetbase.y;
     }
 
     float dt = GetFrameTime();
 
-    // player
     p.update(dt, map.size, map);
-    // gun
     currentGun.focusOn(p.x + p.w / 2, p.y + p.w / 2, 40);
     currentGun.updateRot(cam, p);
-    // gold
     std::vector<int> g = gold_manager.isGoldColliding(
         {(float)p.x, (float)p.y, (float)p.w, (float)p.h});
     for (int i : g) {
@@ -126,56 +130,80 @@ public:
       PlaySound(*assets.fetchSound("pickupGold"));
     }
 
-    /* enemies and bullets */ {
-      std::vector<int> to_erase;
+    std::vector<int> to_erase;
 
-      for (int i = 0; i < enemies.size(); i++) {
-        Enemy &e = enemies.at(i);
-        e.update(dt, p, map.tilemap);
-        if (CheckCollisionRecs(
-                {(float)p.x, (float)p.y, (float)p.w, (float)p.h},
-                {e.getX(), e.getY(), (float)e.getW(), (float)e.getH()})) {
-          p.health -= 25;
-          PlaySound(*assets.fetchSound("hurt"));
-          freezeFrames = 15;
-          to_erase.push_back(i);
-        }
+    for (int i = 0; i < enemies.size(); i++) {
+      Enemy &e = enemies.at(i);
+      e.update(dt, p, map.tilemap);
+      if (CheckCollisionRecs(
+              {(float)p.x, (float)p.y, (float)p.w, (float)p.h},
+              {e.getX(), e.getY(), (float)e.getW(), (float)e.getH()})) {
+        p.health -= 25;
+        PlaySound(*assets.fetchSound("hurt"));
+        freezeFrames = 15;
+        to_erase.push_back(i);
+      }
+    }
+
+    std::vector<int> to_remove;
+
+    for (int i = 0; i < bullets.size(); i++) {
+      Bullet &b = bullets[i];
+      b.move();
+      int bx = b.x / map.TILE_SIZE;
+      int by = b.y / map.TILE_SIZE;
+      if (map.get(bx, by)) {
+        to_remove.push_back(i);
+        continue;
       }
 
-      std::vector<int> to_remove;
-
-      for (int i = 0; i < bullets.size(); i++) {
-        Bullet &b = bullets[i];
-        b.move();
-        int bx = b.x / map.TILE_SIZE;
-        int by = b.y / map.TILE_SIZE;
-        if (map.get(bx, by)) {
+      for (int j = 0; j < enemies.size(); j++) {
+        Enemy &e = enemies[j];
+        if (b.x > e.getX() && b.x < e.getX() + e.getW() && b.y > e.getY() &&
+            b.y < e.getY() + e.getH()) {
+          to_erase.push_back(j);
           to_remove.push_back(i);
-          continue;
-        }
-
-        for (int j = 0; j < enemies.size(); j++) {
-          Enemy &e = enemies[j];
-          if (b.x > e.getX() && b.x < e.getX() + e.getW() && b.y > e.getY() &&
-              b.y < e.getY() + e.getH()) {
-            to_erase.push_back(j);
-            to_remove.push_back(i);
-            PlaySound(*assets.fetchSound("hit"));
-          }
+          PlaySound(*assets.fetchSound("hit"));
         }
       }
+    }
 
-      for (int i : to_erase) {
-        Enemy &e = enemies[i];
-        gold_manager.trySpawnAtPos(e.getX() + e.getW() / 2.0f,
-                                   e.getY() + e.getH() / 2.0f);
-        enemies.erase(enemies.begin() + i);
-        freezeFrames = 30;
-      }
+    std::vector<int> to_delete;
 
-      for (int j : to_remove) {
-        bullets.erase(bullets.begin() + j);
+    for (int i = 0; i < enemydeaths.size(); i++) {
+      EnemyDeath &ed = enemydeaths[i];
+      if (ed.dead()) {
+        to_delete.push_back(i);
       }
+    }
+
+    std::sort(to_delete.begin(), to_delete.end(), std::greater<int>());
+    to_delete.erase(std::unique(to_delete.begin(), to_delete.end()),
+                    to_delete.end());
+
+    std::sort(to_erase.begin(), to_erase.end(), std::greater<int>());
+    to_erase.erase(std::unique(to_erase.begin(), to_erase.end()),
+                   to_erase.end());
+
+    std::sort(to_remove.begin(), to_remove.end(), std::greater<int>());
+    to_remove.erase(std::unique(to_remove.begin(), to_remove.end()),
+                    to_remove.end());
+
+    for (int i : to_delete) {
+      enemydeaths.erase(enemydeaths.begin() + i);
+    }
+
+    for (int i : to_erase) {
+      Enemy &e = enemies[i];
+      gold_manager.trySpawnAtPos(e.getX() + e.getW() / 2.0f,
+                                 e.getY() + e.getH() / 2.0f);
+      enemydeaths.push_back(EnemyDeath(e.getX(), e.getY()));
+      enemies.erase(enemies.begin() + i);
+      freezeFrames = 30;
+    }
+
+    for (int i : to_remove) {
+      bullets.erase(bullets.begin() + i);
     }
 
     if (currentGun.cooldown == 0) {
@@ -188,8 +216,7 @@ public:
       currentGun.cooldown--;
     }
 
-    // level finish
-    if (enemies.size() == 0 && !levelFinished) {
+    if (enemies.size() == 0 && !levelFinished && enemydeaths.size() == 0) {
       levelFinished = true;
       PlaySound(*assets.fetchSound("levelup"));
     }

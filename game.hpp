@@ -52,7 +52,7 @@ public:
       settings_menu.draw(&assets, frameIncrementTimer);
       break;
     case GAME_STATE_IN_GAME:
-      runner.draw(&assets, frameIncrementTimer);
+      runner.draw(&assets, frameIncrementTimer, frame);
       ui.draw(&assets, frameIncrementTimer);
       break;
     case GAME_STATE_SHOP:
