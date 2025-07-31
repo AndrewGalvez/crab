@@ -1,12 +1,13 @@
 #pragma once
-
 #include "bullet.hpp"
 #include "enemy.hpp"
 #include "game_assets.hpp"
 #include "game_map.hpp"
 #include "game_state.hpp"
+#include "gold_manager.hpp"
 #include "gui.hpp"
 #include "gun.hpp"
+#include "inventory.hpp"
 #include "raylib.h"
 #include <cassert>
 #include <cstdlib>
@@ -14,9 +15,13 @@
 
 class GameRunner {
 private:
-  std::vector<Enemy> enemies = {Enemy(100, 100)};
+  std::vector<Enemy> enemies = {};
   GameMap map;
   Camera2D cam;
+  Vector2 camoffsetbase;
+
+  Vector2 screenShake = {0, 0};
+  int freezeFrames = 0;
 
   GUIText finishedText =
       GUIText(240 / 2, 25, 22, "Level finished!", GREEN, true);
@@ -26,11 +31,14 @@ private:
 public:
   Player p = Player(10, 10, 32, 32);
   Gun currentGun;
+  GoldManager gold_manager;
   std::vector<Bullet> bullets;
   int level = 0;
   bool levelFinished = false;
+  Inventory &inv;
 
-  GameRunner() {
+  GameRunner(Inventory &inv) : inv(inv) {
+    camoffsetbase = {(float)240 / 2, (float)240 / 2};
     cam.offset = {(float)240 / 2, (float)240 / 2};
     cam.rotation = 0.0f;
     cam.zoom = 1.0f;
@@ -59,18 +67,22 @@ public:
     }
   }
 
-  void draw(GameAssets *assets, int frame, int freezeFrames) {
+  void draw(GameAssets *assets, int frame) {
     BeginMode2D(cam);
     map.draw();
     p.draw(assets->fetchTexture("crab"), frame, &cam, map.size, freezeFrames,
            assets->fetchShader("whitemask"));
     currentGun.draw();
+
     for (Enemy &e : enemies) {
       e.draw(assets, frame);
     }
     for (Bullet &b : bullets) {
       b.draw();
     }
+
+    gold_manager.draw(*assets);
+
     EndMode2D();
 
     if (levelFinished) {
@@ -88,12 +100,31 @@ public:
     bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir));
   }
 
-  void update(GameAssets &assets, int &freezeFrames, GameState &state) {
+  void update(GameAssets &assets, GameState &state) {
+    if (freezeFrames > 0) {
+      freezeFrames--;
+      screenShake.x += GetRandomValue(-10, 10);
+      screenShake.y += GetRandomValue(-10, 10);
+      cam.offset.x = camoffsetbase.x + screenShake.x;
+      cam.offset.y = camoffsetbase.y + screenShake.y;
+      return;
+    }
+
     float dt = GetFrameTime();
 
+    // player
     p.update(dt, map.size, map);
+    // gun
     currentGun.focusOn(p.x + p.w / 2, p.y + p.w / 2, 40);
     currentGun.updateRot(cam, p);
+    // gold
+    std::vector<int> g = gold_manager.isGoldColliding(
+        {(float)p.x, (float)p.y, (float)p.w, (float)p.h});
+    for (int i : g) {
+      inv.addGold(1);
+      gold_manager.removeGold(i);
+      PlaySound(*assets.fetchSound("pickupGold"));
+    }
 
     /* enemies and bullets */ {
       std::vector<int> to_erase;
@@ -105,8 +136,8 @@ public:
                 {(float)p.x, (float)p.y, (float)p.w, (float)p.h},
                 {e.getX(), e.getY(), (float)e.getW(), (float)e.getH()})) {
           p.health -= 25;
-          freezeFrames = 15;
           PlaySound(*assets.fetchSound("hurt"));
+          freezeFrames = 15;
           to_erase.push_back(i);
         }
       }
@@ -135,8 +166,11 @@ public:
       }
 
       for (int i : to_erase) {
-
+        Enemy &e = enemies[i];
+        gold_manager.trySpawnAtPos(e.getX() + e.getW() / 2.0f,
+                                   e.getY() + e.getH() / 2.0f);
         enemies.erase(enemies.begin() + i);
+        freezeFrames = 30;
       }
 
       for (int j : to_remove) {
@@ -155,9 +189,13 @@ public:
     }
 
     // level finish
-
     if (enemies.size() == 0 && !levelFinished) {
       levelFinished = true;
+      PlaySound(*assets.fetchSound("levelup"));
+    }
+
+    if (levelFinished && IsKeyPressed(KEY_Q)) {
+      state = GAME_STATE_SHOP;
     }
   }
 };

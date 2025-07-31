@@ -11,6 +11,7 @@ class GameUI {
   GameRunner *runner;
   GUIText level_text = GUIText(280, 10, 20, "Level X", WHITE, true);
   GUIText health_text = GUIText(260, 30, 10, "100", WHITE, true);
+  GUIText gold_text = GUIText(275 + 20, 55, 16, "0", WHITE, false);
   const Color SAND_COLOR = {0, 0, 0, 0};
 
 public:
@@ -54,6 +55,8 @@ public:
     level_text.setValue(strdup(ltxt.c_str()));
     std::string htxt = std::to_string(runner->p.health);
     health_text.setValue(strdup(htxt.c_str()));
+    std::string gtxt = std::to_string(runner->inv.getGold());
+    gold_text.setValue(strdup(gtxt.c_str()));
   }
 
   void draw(GameAssets *assets, int frame) {
@@ -61,5 +64,8 @@ public:
     level_text.draw();
     draw_health_bar();
     draw_gun_cooldown();
+    gold_text.draw();
+    DrawTexturePro(*assets->fetchTexture("gold"), {0, 0, 8, 8},
+                   {275, 55, 16, 16}, {0, 0}, 0.0f, WHITE);
   };
 };

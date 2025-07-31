@@ -4,31 +4,37 @@
 #include "game_settings.hpp"
 #include "game_state.hpp"
 #include "game_ui.hpp"
-#include "menus.hpp"
+#include "mainmenu.hpp"
 #include "music.hpp"
+#include "settingsmenu.hpp"
+#include "shop.hpp"
+#include "upgrades.hpp"
 
 class Game {
 private:
   GameSettings settings;
 
+  Inventory inventory;
+  Upgrades upgrades;
   GameUI ui;
   GameState state;
   GameAssets assets;
-  GameRunner runner;
+  GameRunner runner = GameRunner(inventory);
   MainMenu main_menu;
   SettingsMenu settings_menu;
+  ShopMenu shop_menu;
 
   MusicManager m_manager;
 
   int frame = 0;
   int frameIncrementTimer = 0;
-  int freezeFrames = 0;
 
 public:
   Game() {
     settings.loadFromFile("data/settings");
     ui.setRunner(&this->runner);
-    state = GAME_STATE_MAIN_MENU;
+    shop_menu.setRunner(&runner);
+    state = GAME_STATE_SHOP;
     assets.loadAssets();
     if (settings.musicEnabled) {
       m_manager.swapTrack("menu");
@@ -46,10 +52,11 @@ public:
       settings_menu.draw(&assets, frameIncrementTimer);
       break;
     case GAME_STATE_IN_GAME:
-      runner.draw(&assets, frameIncrementTimer, freezeFrames);
+      runner.draw(&assets, frameIncrementTimer);
       ui.draw(&assets, frameIncrementTimer);
       break;
     case GAME_STATE_SHOP:
+      shop_menu.draw(assets, frameIncrementTimer, upgrades);
       break;
     case GAME_STATE_DEAD:
       break;
@@ -76,11 +83,7 @@ public:
       main_menu.update(&assets, &state, &should_exit);
       break;
     case GAME_STATE_IN_GAME:
-      if (freezeFrames > 0) {
-        freezeFrames--;
-        return;
-      }
-      runner.update(assets, freezeFrames, state);
+      runner.update(assets, state);
       ui.update();
       break;
     case GAME_STATE_SETTINGS:
@@ -89,6 +92,7 @@ public:
     case GAME_STATE_DEAD:
       break;
     case GAME_STATE_SHOP:
+      shop_menu.update(&assets, inventory, upgrades);
       break;
     }
 
