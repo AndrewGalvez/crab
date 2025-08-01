@@ -92,7 +92,7 @@ public:
     case GAME_STATE_DEAD:
       break;
     case GAME_STATE_SHOP:
-      shop_menu.update(&assets, inventory, upgrades);
+      shop_menu.update(&assets, inventory, upgrades, state);
       break;
     }
 

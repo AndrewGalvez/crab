@@ -92,6 +92,7 @@ public:
   }
 
   void setColor(Color color) { this->clr = color; }
+  void setHoverColor(Color color) { this->clr_hover = color; }
 
   void setDrawCentered(bool x) { draw_centered = x; }
 };

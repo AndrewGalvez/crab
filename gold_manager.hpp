@@ -35,11 +35,13 @@ public:
       g.draw(assets);
   }
 
-  void trySpawnAtPos(int x, int y) {
-    srand(time(0));
-    double prob = (double)rand() / RAND_MAX;
-    if (prob <= spawnChance) {
-      golds.push_back(Gold(x, y));
+  void trySpawnAtPos(int x, int y, int amount = 1) {
+    for (int i = 0; i < amount; i++) {
+      srand(time(0));
+      double prob = (double)rand() / RAND_MAX;
+      if (prob <= spawnChance) {
+        golds.push_back(Gold(x, y));
+      }
     }
   }
 

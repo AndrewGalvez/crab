@@ -11,6 +11,7 @@
 #include "raylib.h"
 #include <cassert>
 #include <cstdlib>
+#include <raymath.h>
 #include <vector>
 
 class GameRunner {
@@ -113,8 +114,8 @@ public:
       cam.offset.y = camoffsetbase.y + screenShake.y;
       return;
     } else {
-      cam.offset.x = camoffsetbase.x;
-      cam.offset.y = camoffsetbase.y;
+      cam.offset = camoffsetbase;
+      screenShake = Vector2Zero();
     }
 
     float dt = GetFrameTime();

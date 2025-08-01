@@ -1,4 +1,5 @@
 #pragma once
+#include "inventory.hpp"
 #include <cmath>
 #include <map>
 #include <memory>
@@ -13,7 +14,7 @@ protected:
   std::string texid;
 
 public:
-  virtual void buy(int &gold) {};
+  virtual void buy(Inventory &inv) {};
 
   float getCurrent() { return current; }
 
@@ -34,9 +35,9 @@ public:
     texid = "u_goldmultiplier";
   }
 
-  void buy(int &gold) override {
+  void buy(Inventory &inv) override {
     this->current++;
-    gold -= cost;
+    inv.removeGold(cost);
     this->cost = floor(this->cost * 1.5);
   }
 };
@@ -51,10 +52,10 @@ public:
     texid = "u_goldspawns";
   }
 
-  void buy(int &gold) override {
+  void buy(Inventory &inv) override {
     current += (1.0f - this->current) / 10;
-    gold -= cost;
-    this->cost = floor(this->cost * 1.5);
+    inv.removeGold(inv.getGold());
+    this->cost = floor((this->cost + 1) * 1.5);
   }
 };
 
@@ -68,15 +69,16 @@ public:
     upgrades["goldspawns"] = std::make_unique<Upgrade_Gold_Spawns>();
   };
 
-  void buyUpgrade(std::string key, int &gold) {
+  void buyUpgrade(std::string key, Inventory &inv) {
     if (upgrades.find(key) != upgrades.end())
-      upgrades.at(key)->buy(gold);
+      upgrades.at(key)->buy(inv);
   }
 
   Upgrade *get(const std::string &k) const {
     auto it = upgrades.find(k);
     return (it != upgrades.end()) ? it->second.get() : nullptr;
   }
+
   std::string getNext(const std::string &currentKey) const {
     if (upgrades.empty()) {
       return ""; // Handle empty map case
