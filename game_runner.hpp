@@ -105,6 +105,7 @@ public:
     Vector2 spawnPos = Vector2Add(origin, sOffset);
     bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir));
   }
+
   void update(GameAssets &assets, GameState &state) {
     if (freezeFrames > 0) {
       freezeFrames--;
@@ -125,6 +126,7 @@ public:
     currentGun.updateRot(cam, p);
     std::vector<int> g = gold_manager.isGoldColliding(
         {(float)p.x, (float)p.y, (float)p.w, (float)p.h});
+
     for (int i : g) {
       inv.addGold(1);
       gold_manager.removeGold(i);

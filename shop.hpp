@@ -36,8 +36,11 @@ private:
 
   GUIText hpotions_text = GUIText(140, 210, 16, "0", WHITE, false);
 
+  GUIText hpotions_tooltip =
+      GUIText(120, 150, 12, "Restores\n50hp", GREEN, false);
+
   GUIButton hpotion_button =
-      GUIButton(120, 130, 32, 16, GRAY, DARKGRAY, false,
+      GUIButton(120, 130, 2, 16, GRAY, DARKGRAY, false,
                 GUIText(122, 130, 16, "Buy", BLACK, false));
 
   GUIButton button_left = GUIButton(
@@ -100,6 +103,9 @@ public:
       x += 8;
       y += i % 2 == 1 ? 2 : -2;
     }
+
+    if (hpotion_button.isMouseOn())
+      hpotions_tooltip.draw();
   }
 
   void draw_inventory(GameAssets &assets) {

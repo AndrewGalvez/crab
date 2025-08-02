@@ -58,7 +58,7 @@ public:
     health_text.setValue(strdup(htxt.c_str()));
     std::string gtxt = std::to_string(runner->inv.getGold());
     gold_text.setValue(strdup(gtxt.c_str()));
-    std::string hptxt = std::to_string(runner->inv.gethPotions());
+    std::string hptxt = std::to_string(runner->inv.gethPotions()) + "\n(Z)";
     healthpotions_text.setValue(strdup(hptxt.c_str()));
   }
 

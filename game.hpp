@@ -34,7 +34,7 @@ public:
     settings.loadFromFile("data/settings");
     ui.setRunner(&this->runner);
     shop_menu.setRunner(&runner);
-    state = GAME_STATE_SHOP;
+    state = GAME_STATE_MAIN_MENU;
     assets.loadAssets();
     if (settings.musicEnabled) {
       m_manager.swapTrack("menu");
