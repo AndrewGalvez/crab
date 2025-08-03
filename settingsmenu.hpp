@@ -4,6 +4,7 @@
 #include "game_state.hpp"
 #include "gui.hpp"
 #include "raylib.h"
+#include "sound.hpp"
 
 class SettingsMenu {
 private:
@@ -24,14 +25,22 @@ private:
   GUIText music_enabled_text =
       GUIText(10, 50, 25, "Music Enabled: ", WHITE, false);
 
+  GUIText sound_enabled_text =
+      GUIText(10, 80, 25, "Sound Enabled: ", WHITE, false);
+
 public:
   GUICheckbox music_enabled_checkbox = GUICheckbox(200, 57, 10, 10, false);
+  GUICheckbox sound_enabled_checkbox = GUICheckbox(200, 87, 10, 10, false);
+
   void draw(GameAssets *assets, int frame) {
     title_text.draw();
     if (saveMessageTimer > 0)
       save_message_text.draw();
     music_enabled_text.draw();
     music_enabled_checkbox.draw();
+
+    sound_enabled_text.draw();
+    sound_enabled_checkbox.draw();
 
     // buttons
 
@@ -51,7 +60,8 @@ public:
     EndShaderMode();
   }
 
-  void update(GameAssets *assets, GameState *state, GameSettings *settings) {
+  void update(SoundManager &s_manager, GameState *state,
+              GameSettings *settings) {
     if (saveMessageTimer > 0)
       saveMessageTimer--;
 
@@ -61,12 +71,19 @@ public:
       settings->musicEnabled = music_enabled_checkbox.checked;
     }
 
+    if (sound_enabled_checkbox.isMouseOn() &&
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      sound_enabled_checkbox.tick();
+      settings->soundEnabled = sound_enabled_checkbox.checked;
+    }
+
     if (back_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-      PlaySound(*assets->fetchSound("select"));
+      s_manager.play("select");
       *state = GAME_STATE_MAIN_MENU;
     }
+
     if (save_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-      PlaySound(*assets->fetchSound("select"));
+      s_manager.play("select");
       saveMessageTimer = 60;
       settings->saveToFile("data/settings");
     }

@@ -2,7 +2,7 @@
 class Inventory {
 private:
   int gold = 0;
-  int hPotions = 0;
+  int hPotions = 2; // starting amount
 
 public:
   void addGold(int amount) { gold += amount; }

@@ -8,7 +8,9 @@
 #include "music.hpp"
 #include "settingsmenu.hpp"
 #include "shop.hpp"
+#include "sound.hpp"
 #include "upgrades.hpp"
+#include <raylib.h>
 
 class Game {
 private:
@@ -25,6 +27,7 @@ private:
   ShopMenu shop_menu;
 
   MusicManager m_manager;
+  SoundManager s_manager = SoundManager(true, &assets);
 
   int frame = 0;
   int frameIncrementTimer = 0;
@@ -40,7 +43,9 @@ public:
       m_manager.swapTrack("menu");
       m_manager.currentTrack.startMusic(&assets);
     }
+    s_manager.enabled = settings.soundEnabled;
     settings_menu.music_enabled_checkbox.checked = settings.musicEnabled;
+    settings_menu.sound_enabled_checkbox.checked = settings.soundEnabled;
   }
 
   void draw() {
@@ -80,19 +85,19 @@ public:
 
     switch (state) {
     case GAME_STATE_MAIN_MENU:
-      main_menu.update(&assets, &state, &should_exit);
+      main_menu.update(s_manager, &state, &should_exit);
       break;
     case GAME_STATE_IN_GAME:
-      runner.update(assets, state);
+      runner.update(s_manager, state);
       ui.update();
       break;
     case GAME_STATE_SETTINGS:
-      settings_menu.update(&assets, &state, &settings);
+      settings_menu.update(s_manager, &state, &settings);
       break;
     case GAME_STATE_DEAD:
       break;
     case GAME_STATE_SHOP:
-      shop_menu.update(&assets, inventory, upgrades, state);
+      shop_menu.update(s_manager, inventory, upgrades, state);
       break;
     }
 

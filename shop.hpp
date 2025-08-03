@@ -4,6 +4,7 @@
 #include "game_state.hpp"
 #include "gui.hpp"
 #include "inventory.hpp"
+#include "sound.hpp"
 #include "upgrades.hpp"
 #include <cmath>
 #include <memory.h>
@@ -40,7 +41,7 @@ private:
       GUIText(120, 150, 12, "Restores\n50hp", GREEN, false);
 
   GUIButton hpotion_button =
-      GUIButton(120, 130, 2, 16, GRAY, DARKGRAY, false,
+      GUIButton(120, 130, 32, 16, GRAY, DARKGRAY, false,
                 GUIText(122, 130, 16, "Buy", BLACK, false));
 
   GUIButton button_left = GUIButton(
@@ -159,7 +160,7 @@ public:
     draw_inventory(assets);
   };
 
-  void update(GameAssets *assets, Inventory &inv, Upgrades &upgrades,
+  void update(SoundManager &s_manager, Inventory &inv, Upgrades &upgrades,
               GameState &state) {
     gtxt = std::to_string(inv.getGold());
     gold_text.setValue(gtxt.c_str());
@@ -194,7 +195,7 @@ public:
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       if (button_left.isMouseOn() || button_right.isMouseOn()) {
-        PlaySound(*assets->fetchSound("select"));
+        s_manager.play("select");
 
         Upgrade *un = nullptr;
 
@@ -213,23 +214,23 @@ public:
       }
 
       if (button_buy.isMouseOn() && u->getCost() <= inv.getGold()) {
-        PlaySound(*assets->fetchSound("select"));
+        s_manager.play("select");
         u->buy(inv);
       }
 
       if (hpotion_button.isMouseOn() && 5 <= inv.getGold()) {
-        PlaySound(*assets->fetchSound("select"));
+        s_manager.play("select");
         inv.removeGold(5);
         inv.addHPotions(1);
       }
 
       if (finish_button.isMouseOn()) {
-        PlaySound(*assets->fetchSound("select"));
+        s_manager.play("select");
         state = GAME_STATE_IN_GAME;
       }
 
       if (main_menu_button.isMouseOn()) {
-        PlaySound(*assets->fetchSound("select"));
+        s_manager.play("select");
         state = GAME_STATE_MAIN_MENU;
       }
     }

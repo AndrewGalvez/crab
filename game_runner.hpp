@@ -1,5 +1,6 @@
 #pragma once
 #include "bullet.hpp"
+#include "effect.hpp"
 #include "enemy.hpp"
 #include "game_assets.hpp"
 #include "game_map.hpp"
@@ -9,6 +10,7 @@
 #include "gun.hpp"
 #include "inventory.hpp"
 #include "raylib.h"
+#include "sound.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <raymath.h>
@@ -18,6 +20,8 @@ class GameRunner {
 private:
   std::vector<Enemy> enemies = {};
   std::vector<EnemyDeath> enemydeaths = {};
+  std::vector<HealthPotionEffect> hpeffects = {};
+
   GameMap map;
   Camera2D cam;
   Vector2 camoffsetbase;
@@ -86,6 +90,9 @@ public:
     for (Bullet &b : bullets) {
       b.draw();
     }
+    for (HealthPotionEffect &hpe : hpeffects) {
+      hpe.draw();
+    }
 
     gold_manager.draw(*assets);
 
@@ -106,35 +113,25 @@ public:
     bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir));
   }
 
-  void update(GameAssets &assets, GameState &state) {
-    if (freezeFrames > 0) {
-      freezeFrames--;
-      screenShake.x += GetRandomValue(-10, 10);
-      screenShake.y += GetRandomValue(-10, 10);
-      cam.offset.x = camoffsetbase.x + screenShake.x;
-      cam.offset.y = camoffsetbase.y + screenShake.y;
-      return;
-    } else {
-      cam.offset = camoffsetbase;
-      screenShake = Vector2Zero();
-    }
-
-    float dt = GetFrameTime();
-
-    p.update(dt, map.size, map);
-    currentGun.focusOn(p.x + p.w / 2, p.y + p.w / 2, 40);
-    currentGun.updateRot(cam, p);
+  void update_gold(SoundManager &s) {
     std::vector<int> g = gold_manager.isGoldColliding(
         {(float)p.x, (float)p.y, (float)p.w, (float)p.h});
 
     for (int i : g) {
       inv.addGold(1);
       gold_manager.removeGold(i);
-      PlaySound(*assets.fetchSound("pickupGold"));
+      s.play("pickupGold");
     }
+  }
 
-    std::vector<int> to_erase;
+  void update_hpeffects() {
+    for (HealthPotionEffect &hpe : hpeffects) {
+      hpe.update();
+    }
+  }
 
+  void update_enemies(float dt, SoundManager &s,
+                      std::vector<int> &to_erase_enemies) {
     for (int i = 0; i < enemies.size(); i++) {
       Enemy &e = enemies.at(i);
       e.update(dt, p, map.tilemap);
@@ -142,12 +139,14 @@ public:
               {(float)p.x, (float)p.y, (float)p.w, (float)p.h},
               {e.getX(), e.getY(), (float)e.getW(), (float)e.getH()})) {
         p.health -= 25;
-        PlaySound(*assets.fetchSound("hurt"));
+        s.play("hurt");
         freezeFrames = 15;
-        to_erase.push_back(i);
+        to_erase_enemies.push_back(i);
       }
     }
+  }
 
+  void update_bullets(std::vector<int> &to_erase_enemies, SoundManager &s) {
     std::vector<int> to_remove;
 
     for (int i = 0; i < bullets.size(); i++) {
@@ -164,13 +163,23 @@ public:
         Enemy &e = enemies[j];
         if (b.x > e.getX() && b.x < e.getX() + e.getW() && b.y > e.getY() &&
             b.y < e.getY() + e.getH()) {
-          to_erase.push_back(j);
+          to_erase_enemies.push_back(j);
           to_remove.push_back(i);
-          PlaySound(*assets.fetchSound("hit"));
+          s.play("hit");
         }
       }
     }
 
+    std::sort(to_remove.begin(), to_remove.end(), std::greater<int>());
+    to_remove.erase(std::unique(to_remove.begin(), to_remove.end()),
+                    to_remove.end());
+
+    for (int i : to_remove) {
+      bullets.erase(bullets.begin() + i);
+    }
+  }
+
+  void update_enemy_deaths() {
     std::vector<int> to_delete;
 
     for (int i = 0; i < enemydeaths.size(); i++) {
@@ -184,19 +193,54 @@ public:
     to_delete.erase(std::unique(to_delete.begin(), to_delete.end()),
                     to_delete.end());
 
-    std::sort(to_erase.begin(), to_erase.end(), std::greater<int>());
-    to_erase.erase(std::unique(to_erase.begin(), to_erase.end()),
-                   to_erase.end());
-
-    std::sort(to_remove.begin(), to_remove.end(), std::greater<int>());
-    to_remove.erase(std::unique(to_remove.begin(), to_remove.end()),
-                    to_remove.end());
-
     for (int i : to_delete) {
       enemydeaths.erase(enemydeaths.begin() + i);
     }
+  };
 
-    for (int i : to_erase) {
+  void update_player(float dt) {
+    p.update(dt, map.size, map);
+    currentGun.focusOn(p.x + p.w / 2, p.y + p.w / 2, 40);
+    currentGun.updateRot(cam, p);
+  }
+
+  void update_hpotions(SoundManager &s) {
+    if (IsKeyPressed(KEY_Z) && inv.gethPotions() > 0 && p.health < 100) {
+      p.health += 50;
+      if (p.health > 100)
+        p.health = 100;
+
+      inv.removeHPotions(1);
+      s.play("hPotion");
+      hpeffects.push_back(HealthPotionEffect(p.x + p.w / 2, p.y + p.h / 2));
+    }
+  }
+
+  void update(SoundManager &s, GameState &state) {
+    if (freezeFrames > 0) {
+      freezeFrames--;
+      screenShake.x += GetRandomValue(-10, 10);
+      screenShake.y += GetRandomValue(-10, 10);
+      cam.offset.x = camoffsetbase.x + screenShake.x;
+      cam.offset.y = camoffsetbase.y + screenShake.y;
+      return;
+    } else {
+      cam.offset = camoffsetbase;
+      screenShake = Vector2Zero();
+    }
+
+    float dt = GetFrameTime();
+
+    update_hpotions(s);
+    update_player(dt);
+    update_gold(s);
+    update_hpeffects();
+    std::vector<int> to_erase_enemies;
+    update_bullets(to_erase_enemies, s);
+    update_enemies(dt, s, to_erase_enemies);
+    update_enemy_deaths();
+
+    for (int i : to_erase_enemies) {
       Enemy &e = enemies[i];
       gold_manager.trySpawnAtPos(e.getX() + e.getW() / 2.0f,
                                  e.getY() + e.getH() / 2.0f);
@@ -205,15 +249,11 @@ public:
       freezeFrames = 30;
     }
 
-    for (int i : to_remove) {
-      bullets.erase(bullets.begin() + i);
-    }
-
     if (currentGun.cooldown == 0) {
       if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
         shoot(currentGun.bSpeed);
         currentGun.cooldown = currentGun.baseCooldown;
-        PlaySound(*assets.fetchSound("shoot"));
+        s.play("shoot");
       }
     } else {
       currentGun.cooldown--;
@@ -221,7 +261,7 @@ public:
 
     if (enemies.size() == 0 && !levelFinished && enemydeaths.size() == 0) {
       levelFinished = true;
-      PlaySound(*assets.fetchSound("levelup"));
+      s.play("levelup");
     }
 
     if (levelFinished && IsKeyPressed(KEY_Q)) {

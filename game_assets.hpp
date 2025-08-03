@@ -29,6 +29,7 @@ public:
     sounds["shoot"] = LoadSound("assets/click.wav");
     sounds["levelup"] = LoadSound("assets/levelup.wav");
     sounds["pickupGold"] = LoadSound("assets/pickupCoin.wav");
+    sounds["hPotion"] = LoadSound("assets/potion_health.wav");
   }
 
   Texture2D *fetchTexture(const std::string &key) { return &textures[key]; }

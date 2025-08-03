@@ -2,6 +2,8 @@
 #include "game_assets.hpp"
 #include "game_state.hpp"
 #include "gui.hpp"
+#include "sound.hpp"
+#include <raylib.h>
 class MainMenu {
 private:
   GUIText title_text =
@@ -50,22 +52,22 @@ public:
                    {225, 0, 16 * 4, 16 * 4}, {0, 0}, 0.0f, WHITE);
   };
 
-  void update(GameAssets *assets, GameState *state, bool **should_exit) {
+  void update(SoundManager &s_manager, GameState *state, bool **should_exit) {
     if (start_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ||
         IsKeyPressed(KEY_S)) {
       *state = GAME_STATE_IN_GAME;
-      PlaySound(*assets->fetchSound("select"));
+      s_manager.play("select");
     }
     if (quit_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ||
         IsKeyPressed(KEY_Q)) {
       **should_exit = true;
-      PlaySound(*assets->fetchSound("select"));
+      s_manager.play("select");
     }
     if (settings_button.isMouseOn() &&
             IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ||
         IsKeyPressed(KEY_E)) {
       *state = GAME_STATE_SETTINGS;
-      PlaySound(*assets->fetchSound("select"));
+      s_manager.play("select");
     }
   };
 };
