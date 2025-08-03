@@ -11,6 +11,7 @@
 #include "inventory.hpp"
 #include "raylib.h"
 #include "sound.hpp"
+#include "upgrades.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <raymath.h>
@@ -54,7 +55,7 @@ public:
     p.update(0, map.size, map);
   }
 
-  void startLevel() {
+  void startLevel(Upgrades &u) {
     level++;
     levelFinished = false;
 
@@ -70,6 +71,8 @@ public:
 
       enemies.push_back(Enemy(tX * 32, tY * 32));
     }
+
+    gold_manager.setSpawnChance(u.get("goldspawns")->getCurrent());
   }
 
   void draw(GameAssets *assets, int frame, int f2) {
@@ -198,10 +201,20 @@ public:
     }
   };
 
-  void update_player(float dt) {
+  void update_player(SoundManager &s, float dt) {
     p.update(dt, map.size, map);
     currentGun.focusOn(p.x + p.w / 2, p.y + p.w / 2, 40);
     currentGun.updateRot(cam, p);
+
+    if (currentGun.cooldown == 0) {
+      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        shoot(currentGun.bSpeed);
+        currentGun.cooldown = currentGun.baseCooldown;
+        s.play("shoot");
+      }
+    } else {
+      currentGun.cooldown--;
+    }
   }
 
   void update_hpotions(SoundManager &s) {
@@ -232,13 +245,19 @@ public:
     float dt = GetFrameTime();
 
     update_hpotions(s);
-    update_player(dt);
+    update_player(s, dt);
     update_gold(s);
     update_hpeffects();
     std::vector<int> to_erase_enemies;
     update_bullets(to_erase_enemies, s);
     update_enemies(dt, s, to_erase_enemies);
     update_enemy_deaths();
+
+    std::sort(to_erase_enemies.begin(), to_erase_enemies.end(),
+              std::greater<int>());
+    to_erase_enemies.erase(
+        std::unique(to_erase_enemies.begin(), to_erase_enemies.end()),
+        to_erase_enemies.end());
 
     for (int i : to_erase_enemies) {
       Enemy &e = enemies[i];
@@ -247,16 +266,6 @@ public:
       enemydeaths.push_back(EnemyDeath(e.getX(), e.getY()));
       enemies.erase(enemies.begin() + i);
       freezeFrames = 30;
-    }
-
-    if (currentGun.cooldown == 0) {
-      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        shoot(currentGun.bSpeed);
-        currentGun.cooldown = currentGun.baseCooldown;
-        s.play("shoot");
-      }
-    } else {
-      currentGun.cooldown--;
     }
 
     if (enemies.size() == 0 && !levelFinished && enemydeaths.size() == 0) {

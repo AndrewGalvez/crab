@@ -102,7 +102,7 @@ public:
     }
 
     if (last_state != GAME_STATE_IN_GAME && state == GAME_STATE_IN_GAME)
-      runner.startLevel();
+      runner.startLevel(upgrades);
 
     if (last_state != state && settings.musicEnabled) {
       if (last_state == GAME_STATE_IN_GAME) {

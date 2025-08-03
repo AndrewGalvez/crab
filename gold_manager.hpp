@@ -56,4 +56,6 @@ public:
   }
 
   void removeGold(int j) { golds.erase(golds.begin() + j); }
+
+  void setSpawnChance(float a) { spawnChance = a; }
 };

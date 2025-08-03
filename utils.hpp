@@ -20,6 +20,24 @@ inline void DrawRenderTexture(RenderTexture2D target, int targetWidth,
       {0, 0}, 0, WHITE);
 }
 
+inline Vector2 GetScreenMousePos(Camera2D cam) {
+  float widthRatio = (float)GetScreenWidth() / 320;
+  float heightRatio = (float)GetScreenHeight() / 240;
+  float scale = (widthRatio < heightRatio) ? widthRatio : heightRatio;
+  int renderWidth = (int)(320 * scale);
+  int renderHeight = (int)(240 * scale);
+  int offsetX = (GetScreenWidth() - renderWidth) / 2;
+  int offsetY = (GetScreenHeight() - renderHeight) / 2;
+  Vector2 mouseScreenPos = GetMousePosition();
+
+  Vector2 renderMouse = {(mouseScreenPos.x / scale) + offsetX,
+                         (mouseScreenPos.y / scale) + offsetY};
+
+  Vector2 mousePos = GetScreenToWorld2D(renderMouse, cam);
+
+  return mousePos;
+};
+
 inline int dist(Vector2 a, Vector2 b) {
   int c = a.x - b.x;
   int d = a.y - b.y;
