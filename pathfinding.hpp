@@ -3,7 +3,6 @@
 #include <array>
 #include <climits>
 #include <cmath>
-#include <cstdio>
 #include <queue>
 #include <vector>
 

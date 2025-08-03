@@ -47,13 +47,15 @@ private:
   bool draw_centered;
   GUIText text;
   bool playSoundOnClick = false;
+  bool enabled = true;
 
 public:
   GUIButton(int x, int y, int w, int h, Color color, Color color_hover,
-            bool draw_centered, GUIText text, bool playSound = false)
+            bool draw_centered, GUIText text, bool playSound = false,
+            bool enabled = true)
       : x(x), y(y), w(w), h(h), clr(color), clr_hover(color_hover),
-        draw_centered(draw_centered), text(text),
-        playSoundOnClick(playSound) {};
+        draw_centered(draw_centered), text(text), playSoundOnClick(playSound),
+        enabled(enabled) {};
 
   bool isMouseOn() {
     int targetWidth = 320;
@@ -76,7 +78,7 @@ public:
 
   void draw() {
     int nx = draw_centered ? x - w / 2 : x;
-    Color nclr = isMouseOn() ? clr_hover : clr;
+    Color nclr = !isMouseOn() && enabled ? clr : clr_hover;
     DrawRectangle(nx, y, w, h, nclr);
     text.draw();
   };

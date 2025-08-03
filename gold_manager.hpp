@@ -40,7 +40,9 @@ public:
       srand(time(0));
       double prob = (double)rand() / RAND_MAX;
       if (prob <= spawnChance) {
-        golds.push_back(Gold(x, y));
+        int ox = GetRandomValue(-10, 10);
+        int oy = GetRandomValue(-10, 10);
+        golds.push_back(Gold(x + ox, y + oy));
       }
     }
   }

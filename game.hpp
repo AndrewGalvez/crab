@@ -1,4 +1,5 @@
 #pragma once
+#include "deadmenu.hpp"
 #include "game_assets.hpp"
 #include "game_runner.hpp"
 #include "game_settings.hpp"
@@ -25,6 +26,7 @@ private:
   MainMenu main_menu;
   SettingsMenu settings_menu;
   ShopMenu shop_menu;
+  DeadMenu dead_menu;
 
   MusicManager m_manager;
   SoundManager s_manager = SoundManager(true, &assets);
@@ -37,7 +39,7 @@ public:
     settings.loadFromFile("data/settings");
     ui.setRunner(&this->runner);
     shop_menu.setRunner(&runner);
-    state = GAME_STATE_MAIN_MENU;
+    state = GAME_STATE_DEAD;
     assets.loadAssets();
     if (settings.musicEnabled) {
       m_manager.swapTrack("menu");
@@ -64,6 +66,7 @@ public:
       shop_menu.draw(assets, frameIncrementTimer, upgrades);
       break;
     case GAME_STATE_DEAD:
+      dead_menu.draw(assets);
       break;
     }
   };
@@ -88,13 +91,14 @@ public:
       main_menu.update(s_manager, &state, &should_exit);
       break;
     case GAME_STATE_IN_GAME:
-      runner.update(s_manager, state);
+      runner.update(s_manager, state, upgrades);
       ui.update();
       break;
     case GAME_STATE_SETTINGS:
       settings_menu.update(s_manager, &state, &settings);
       break;
     case GAME_STATE_DEAD:
+      dead_menu.update(GetFrameTime(), s_manager, state, runner);
       break;
     case GAME_STATE_SHOP:
       shop_menu.update(s_manager, inventory, upgrades, state);

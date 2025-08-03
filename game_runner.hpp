@@ -28,84 +28,12 @@ private:
   Vector2 camoffsetbase;
   Vector2 screenShake = {0, 0};
   int freezeFrames = 0;
+  bool dead = false;
 
   GUIText finishedText =
       GUIText(240 / 2, 25, 22, "Level finished!", GREEN, true);
   GUIText finishedText2 =
       GUIText(240 / 2, 55, 18, "Return to shop: Q", GREEN, true);
-
-public:
-  Player p = Player(10, 10, 32, 32);
-  Gun currentGun;
-  GoldManager gold_manager;
-  std::vector<Bullet> bullets;
-  int level = 0;
-  bool levelFinished = false;
-  Inventory &inv;
-
-  GameRunner(Inventory &inv) : inv(inv) {
-    camoffsetbase = {(float)240 / 2, (float)240 / 2};
-    cam.offset = {(float)240 / 2, (float)240 / 2};
-    cam.rotation = 0.0f;
-    cam.zoom = 1.0f;
-    map.loadFromFile("data/map");
-
-    p.findSpawn(map);
-
-    p.update(0, map.size, map);
-  }
-
-  void startLevel(Upgrades &u) {
-    level++;
-    levelFinished = false;
-
-    for (int i = 0; i < level; i++) {
-      int tX = 0;
-      int tY = 0;
-
-      while (map.get(tX, tY)) {
-        srand(time(0));
-        tX = (int)(rand() % 18) + 1;
-        tY = (int)(rand() % 18) + 1;
-      }
-
-      enemies.push_back(Enemy(tX * 32, tY * 32));
-    }
-
-    gold_manager.setSpawnChance(u.get("goldspawns")->getCurrent());
-  }
-
-  void draw(GameAssets *assets, int frame, int f2) {
-    BeginMode2D(cam);
-    map.draw();
-    p.draw(assets->fetchTexture("crab"), frame, &cam, map.size, freezeFrames,
-           assets->fetchShader("whitemask"));
-    currentGun.draw();
-
-    for (Enemy &e : enemies) {
-      e.draw(assets, frame);
-    }
-    for (EnemyDeath &ed : enemydeaths) {
-      if (f2 == 0)
-        ed.incrementFrame();
-      ed.draw(assets);
-    }
-    for (Bullet &b : bullets) {
-      b.draw();
-    }
-    for (HealthPotionEffect &hpe : hpeffects) {
-      hpe.draw();
-    }
-
-    gold_manager.draw(*assets);
-
-    EndMode2D();
-
-    if (levelFinished) {
-      finishedText.draw();
-      finishedText2.draw();
-    }
-  };
 
   void shoot(float speed) {
     float angleRad = -currentGun.rot * DEG2RAD;
@@ -229,7 +157,99 @@ public:
     }
   }
 
-  void update(SoundManager &s, GameState &state) {
+public:
+  Player p = Player(10, 10, 32, 32);
+  Gun currentGun;
+  GoldManager gold_manager;
+  std::vector<Bullet> bullets;
+  int level = 0;
+  bool levelFinished = false;
+  Inventory &inv;
+
+  GameRunner(Inventory &inv) : inv(inv) {
+    camoffsetbase = {(float)240 / 2, (float)240 / 2};
+    cam.offset = {(float)240 / 2, (float)240 / 2};
+    cam.rotation = 0.0f;
+    cam.zoom = 1.0f;
+    map.loadFromFile("data/map");
+
+    p.findSpawn(map);
+
+    p.update(0, map.size, map);
+  }
+
+  void reset() {
+    p = Player(10, 10, 32, 32);
+    currentGun = Gun();
+    gold_manager = GoldManager();
+    bullets.clear();
+    level = 0;
+    levelFinished = false;
+
+    camoffsetbase = {(float)240 / 2, (float)240 / 2};
+    cam.offset = {(float)240 / 2, (float)240 / 2};
+    cam.rotation = 0.0f;
+    cam.zoom = 1.0f;
+    map.loadFromFile("data/map");
+
+    p.findSpawn(map);
+
+    p.update(0, map.size, map);
+  }
+
+  void startLevel(Upgrades &u) {
+    level++;
+    levelFinished = false;
+
+    for (int i = 0; i < level; i++) {
+      int tX = 0;
+      int tY = 0;
+
+      while (map.get(tX, tY)) {
+        srand(time(0));
+        tX = (int)(rand() % 18) + 1;
+        tY = (int)(rand() % 18) + 1;
+      }
+
+      enemies.push_back(Enemy(tX * 32, tY * 32));
+    }
+
+    gold_manager.setSpawnChance(u.get("goldspawns")->getCurrent());
+  }
+
+  void draw(GameAssets *assets, int frame, int f2) {
+    BeginMode2D(cam);
+    map.draw();
+    p.draw(assets->fetchTexture("crab"), frame, &cam, map.size, freezeFrames,
+           assets->fetchShader("whitemask"));
+    currentGun.draw();
+
+    for (Enemy &e : enemies) {
+      e.draw(assets, frame);
+    }
+    for (EnemyDeath &ed : enemydeaths) {
+      if (f2 == 0)
+        ed.incrementFrame();
+      ed.draw(assets);
+    }
+    for (Bullet &b : bullets) {
+      b.draw();
+    }
+    for (HealthPotionEffect &hpe : hpeffects) {
+      hpe.draw();
+    }
+
+    gold_manager.draw(*assets);
+
+    EndMode2D();
+
+    if (levelFinished) {
+      finishedText.draw();
+      finishedText2.draw();
+    }
+  }
+
+  void update(SoundManager &s, GameState &state, Upgrades &u) {
     if (freezeFrames > 0) {
       freezeFrames--;
       screenShake.x += GetRandomValue(-10, 10);
@@ -262,10 +282,21 @@ public:
     for (int i : to_erase_enemies) {
       Enemy &e = enemies[i];
       gold_manager.trySpawnAtPos(e.getX() + e.getW() / 2.0f,
-                                 e.getY() + e.getH() / 2.0f);
+                                 e.getY() + e.getH() / 2.0f,
+                                 u.get("goldmultiplier")->getCurrent());
       enemydeaths.push_back(EnemyDeath(e.getX(), e.getY()));
       enemies.erase(enemies.begin() + i);
       freezeFrames = 30;
+    }
+
+    if (p.health <= 0 && !dead) {
+      dead = true;
+      freezeFrames = 500;
+    }
+
+    if (dead && freezeFrames <= 0) {
+      state = GAME_STATE_DEAD;
+      s.play("death");
     }
 
     if (enemies.size() == 0 && !levelFinished && enemydeaths.size() == 0) {
