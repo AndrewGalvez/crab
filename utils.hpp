@@ -30,8 +30,8 @@ inline Vector2 GetScreenMousePos(Camera2D cam) {
   int offsetY = (GetScreenHeight() - renderHeight) / 2;
   Vector2 mouseScreenPos = GetMousePosition();
 
-  Vector2 renderMouse = {(mouseScreenPos.x / scale),
-                         (mouseScreenPos.y / scale)};
+  Vector2 renderMouse = {(mouseScreenPos.x - offsetX) / scale,
+                         (mouseScreenPos.y - offsetY) / scale};
 
   Vector2 mousePos = GetScreenToWorld2D(renderMouse, cam);
 
