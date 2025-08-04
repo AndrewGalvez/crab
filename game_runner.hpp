@@ -43,7 +43,6 @@ private:
     Vector2 spawnPos = Vector2Add(origin, sOffset);
     bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir));
   }
-
   void update_gold(SoundManager &s) {
     std::vector<int> g = gold_manager.isGoldColliding(
         {(float)p.x, (float)p.y, (float)p.w, (float)p.h});
@@ -54,13 +53,11 @@ private:
       s.play("pickupGold");
     }
   }
-
   void update_hpeffects() {
     for (HealthPotionEffect &hpe : hpeffects) {
       hpe.update();
     }
   }
-
   void update_enemies(float dt, SoundManager &s,
                       std::vector<int> &to_erase_enemies) {
     for (int i = 0; i < enemies.size(); i++) {
@@ -76,7 +73,6 @@ private:
       }
     }
   }
-
   void update_bullets(std::vector<int> &to_erase_enemies, SoundManager &s) {
     std::vector<int> to_remove;
 
@@ -109,7 +105,6 @@ private:
       bullets.erase(bullets.begin() + i);
     }
   }
-
   void update_enemy_deaths() {
     std::vector<int> to_delete;
 
@@ -128,7 +123,6 @@ private:
       enemydeaths.erase(enemydeaths.begin() + i);
     }
   };
-
   void update_player(SoundManager &s, float dt) {
     p.update(dt, map.size, map);
     currentGun.focusOn(p.x + p.w / 2, p.y + p.w / 2, 40);
@@ -144,7 +138,6 @@ private:
       currentGun.cooldown--;
     }
   }
-
   void update_hpotions(SoundManager &s) {
     if (IsKeyPressed(KEY_Z) && inv.gethPotions() > 0 && p.health < 100) {
       p.health += 50;
@@ -196,7 +189,6 @@ public:
 
     p.update(0, map.size, map);
   }
-
   void startLevel(Upgrades &u) {
     level++;
     levelFinished = false;
@@ -216,7 +208,6 @@ public:
 
     gold_manager.setSpawnChance(u.get("goldspawns")->getCurrent());
   }
-
   void draw(GameAssets *assets, int frame, int f2) {
     BeginMode2D(cam);
     map.draw();
@@ -248,7 +239,6 @@ public:
       finishedText2.draw();
     }
   }
-
   void update(SoundManager &s, GameState &state, Upgrades &u) {
     if (freezeFrames > 0) {
       freezeFrames--;
@@ -292,11 +282,11 @@ public:
     if (p.health <= 0 && !dead) {
       dead = true;
       freezeFrames = 500;
+      s.play("death");
     }
 
     if (dead && freezeFrames <= 0) {
       state = GAME_STATE_DEAD;
-      s.play("death");
     }
 
     if (enemies.size() == 0 && !levelFinished && enemydeaths.size() == 0) {
