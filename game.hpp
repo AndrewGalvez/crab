@@ -42,7 +42,6 @@ public:
     state = GAME_STATE_DEAD;
     assets.loadAssets();
     if (settings.musicEnabled) {
-      m_manager.swapTrack("menu");
       m_manager.currentTrack.startMusic(&assets);
     }
     s_manager.enabled = settings.soundEnabled;
