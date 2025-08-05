@@ -19,6 +19,8 @@ public:
         LoadTexture("assets/upgrade_icons/GoldMultiplier.png");
     textures["u_goldspawns"] =
         LoadTexture("assets/upgrade_icons/GoldSpawns.png");
+    textures["u_goldmagnet"] =
+        LoadTexture("assets/upgrade_icons/GoldMagnet.png");
     shaders["grain"] = LoadShader(0, "shaders/grain.fs");
     shaders["whitemask"] = LoadShader(0, "shaders/white_mask.fs");
     musics["menu"] = LoadMusicStream("assets/menu.mp3");
@@ -31,6 +33,7 @@ public:
     sounds["pickupGold"] = LoadSound("assets/pickupCoin.wav");
     sounds["hPotion"] = LoadSound("assets/potion_health.wav");
     sounds["death"] = LoadSound("assets/death.wav");
+    sounds["goldspawn"] = LoadSound("assets/gold_spawn.wav");
   }
 
   Texture2D *fetchTexture(const std::string &key) { return &textures[key]; }

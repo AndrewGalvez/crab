@@ -17,7 +17,7 @@ public:
   Player(int x, int y, int w, int h) : x(x), y(y), w(w), h(h) {}
 
   void draw(Texture2D *tex, int frame, Camera2D *cam, int mapSize,
-            int freezeFrames, Shader *wshader) {
+            int freezeFrames, Shader *wshader, float gmr) {
     cam->target.x = this->x + (float)this->w / 2;
     cam->target.y = this->y + (float)this->h / 2;
 
@@ -29,6 +29,8 @@ public:
       cam->target.x = mapSize - cam->offset.x;
     if (cam->target.y + cam->offset.y > mapSize)
       cam->target.y = mapSize - cam->offset.y;
+
+    DrawCircle(x + w / 2, y + h / 2, gmr, ColorAlpha(DARKBLUE, 0.33));
 
     if (freezeFrames > 0)
       BeginShaderMode(*wshader);
@@ -46,7 +48,6 @@ public:
     int prevY = y;
     this->animY = 0;
 
-    // Handle input
     if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT))
       this->x -= moveSpeed;
     if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP))
@@ -56,27 +57,21 @@ public:
     if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
       this->y += moveSpeed;
 
-    // Check horizontal collision (X-axis movement)
     if (this->x != prevX) {
-      // Calculate all four corners for horizontal collision
       int leftTileX = this->x / map.TILE_SIZE;
       int rightTileX = (this->x + this->w - 1) / map.TILE_SIZE;
       int topTileY = this->y / map.TILE_SIZE;
       int bottomTileY = (this->y + this->h - 1) / map.TILE_SIZE;
 
-      // Check if any corner hits a wall
       bool collision = false;
 
-      // Check bounds first
       if (leftTileX < 0 || rightTileX >= map.tile_num || topTileY < 0 ||
           bottomTileY >= map.tile_num) {
         collision = true;
       } else {
-        // Check all four corners for horizontal movement
-        if (map.get(leftTileX, topTileY) ||     // Top-left
-            map.get(rightTileX, topTileY) ||    // Top-right
-            map.get(leftTileX, bottomTileY) ||  // Bottom-left
-            map.get(rightTileX, bottomTileY)) { // Bottom-right
+        if (map.get(leftTileX, topTileY) || map.get(rightTileX, topTileY) ||
+            map.get(leftTileX, bottomTileY) ||
+            map.get(rightTileX, bottomTileY)) {
           collision = true;
         }
       }
@@ -86,27 +81,21 @@ public:
       }
     }
 
-    // Check vertical collision (Y-axis movement)
     if (this->y != prevY) {
-      // Calculate all four corners for vertical collision
       int leftTileX = this->x / map.TILE_SIZE;
       int rightTileX = (this->x + this->w - 1) / map.TILE_SIZE;
       int topTileY = this->y / map.TILE_SIZE;
       int bottomTileY = (this->y + this->h - 1) / map.TILE_SIZE;
 
-      // Check if any corner hits a wall
       bool collision = false;
 
-      // Check bounds first
       if (leftTileX < 0 || rightTileX >= map.tile_num || topTileY < 0 ||
           bottomTileY >= map.tile_num) {
         collision = true;
       } else {
-        // Check all four corners for vertical movement
-        if (map.get(leftTileX, topTileY) ||     // Top-left
-            map.get(rightTileX, topTileY) ||    // Top-right
-            map.get(leftTileX, bottomTileY) ||  // Bottom-left
-            map.get(rightTileX, bottomTileY)) { // Bottom-right
+        if (map.get(leftTileX, topTileY) || map.get(rightTileX, topTileY) ||
+            map.get(leftTileX, bottomTileY) ||
+            map.get(rightTileX, bottomTileY)) {
           collision = true;
         }
       }
@@ -116,7 +105,6 @@ public:
       }
     }
 
-    // Set animation state
     if (this->x != prevX || this->y != prevY) {
       animY = 16;
     }

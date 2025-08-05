@@ -9,6 +9,8 @@ private:
 public:
   MusicPlayer(const char *name) : name(name) {};
 
+  Music &fetch(GameAssets *assets) { return *assets->fetchMusic(name); }
+
   void stopMusic(GameAssets *assets) {
     StopMusicStream(*assets->fetchMusic(name));
   }

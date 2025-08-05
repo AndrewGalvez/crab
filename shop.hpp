@@ -79,8 +79,8 @@ public:
     DrawRectangle(x, y, w, h, BLACK);
     DrawRectangle(x + padding, y + padding, w - padding * 2, h - padding * 2,
                   RED);
-    DrawRectangle(x + padding, y + padding,
-                  w - padding * 2 * (runner->p.health / 100), h - padding * 2,
+    int health_width = (w - padding * 2) * (runner->p.health / 100.0f);
+    DrawRectangle(x + padding, y + padding, health_width, h - padding * 2,
                   GREEN);
   };
 

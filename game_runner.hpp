@@ -43,7 +43,8 @@ private:
     Vector2 spawnPos = Vector2Add(origin, sOffset);
     bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir));
   }
-  void update_gold(SoundManager &s) {
+
+  void update_gold(SoundManager &s, Upgrades &u) {
     std::vector<int> g = gold_manager.isGoldColliding(
         {(float)p.x, (float)p.y, (float)p.w, (float)p.h});
 
@@ -52,6 +53,9 @@ private:
       gold_manager.removeGold(i);
       s.play("pickupGold");
     }
+
+    gold_manager.updateGoldMagnet(p.x + p.w / 2.0f, p.y + p.h / 2.0f,
+                                  u.get("goldmagnet")->getCurrent());
   }
   void update_hpeffects() {
     for (HealthPotionEffect &hpe : hpeffects) {
@@ -189,6 +193,7 @@ public:
 
     p.update(0, map.size, map);
   }
+
   void startLevel(Upgrades &u) {
     level++;
     levelFinished = false;
@@ -208,11 +213,11 @@ public:
 
     gold_manager.setSpawnChance(u.get("goldspawns")->getCurrent());
   }
-  void draw(GameAssets *assets, int frame, int f2) {
+  void draw(GameAssets *assets, int frame, int f2, Upgrades &u) {
     BeginMode2D(cam);
     map.draw();
     p.draw(assets->fetchTexture("crab"), frame, &cam, map.size, freezeFrames,
-           assets->fetchShader("whitemask"));
+           assets->fetchShader("whitemask"), u.get("goldmagnet")->getCurrent());
     currentGun.draw();
 
     for (Enemy &e : enemies) {
@@ -256,7 +261,7 @@ public:
 
     update_hpotions(s);
     update_player(s, dt);
-    update_gold(s);
+    update_gold(s, u);
     update_hpeffects();
     std::vector<int> to_erase_enemies;
     update_bullets(to_erase_enemies, s);
@@ -272,7 +277,7 @@ public:
     for (int i : to_erase_enemies) {
       Enemy &e = enemies[i];
       gold_manager.trySpawnAtPos(e.getX() + e.getW() / 2.0f,
-                                 e.getY() + e.getH() / 2.0f,
+                                 e.getY() + e.getH() / 2.0f, s,
                                  u.get("goldmultiplier")->getCurrent());
       enemydeaths.push_back(EnemyDeath(e.getX(), e.getY()));
       enemies.erase(enemies.begin() + i);

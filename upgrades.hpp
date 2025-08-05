@@ -54,8 +54,24 @@ public:
 
   void buy(Inventory &inv) override {
     current += (1.0f - this->current) / 10;
-    inv.removeGold(inv.getGold());
+    inv.removeGold(cost);
     this->cost = floor((this->cost + 1) * 1.5);
+  }
+};
+
+class Upgrade_Gold_Magnet : public Upgrade {
+public:
+  Upgrade_Gold_Magnet() : Upgrade() {
+    current = 25.0f;
+    cost = 1;
+    id = "goldmagnet";
+    name = "Gold Magnet";
+    texid = "u_goldmagnet";
+  }
+  void buy(Inventory &inv) override {
+    current *= 2;
+    inv.removeGold(cost);
+    cost += 2;
   }
 };
 
@@ -67,6 +83,7 @@ public:
   Upgrades() {
     upgrades["goldmultiplier"] = std::make_unique<Upgrade_Gold_Multiplier>();
     upgrades["goldspawns"] = std::make_unique<Upgrade_Gold_Spawns>();
+    upgrades["goldmagnet"] = std::make_unique<Upgrade_Gold_Magnet>();
   };
 
   void buyUpgrade(std::string key, Inventory &inv) {

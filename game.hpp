@@ -39,7 +39,7 @@ public:
     settings.loadFromFile("data/settings");
     ui.setRunner(&this->runner);
     shop_menu.setRunner(&runner);
-    state = GAME_STATE_DEAD;
+    state = GAME_STATE_MAIN_MENU;
     assets.loadAssets();
     if (settings.musicEnabled) {
       m_manager.currentTrack.startMusic(&assets);
@@ -58,7 +58,7 @@ public:
       settings_menu.draw(&assets, frameIncrementTimer);
       break;
     case GAME_STATE_IN_GAME:
-      runner.draw(&assets, frameIncrementTimer, frame);
+      runner.draw(&assets, frameIncrementTimer, frame, upgrades);
       ui.draw(&assets, frameIncrementTimer);
       break;
     case GAME_STATE_SHOP:
@@ -111,11 +111,17 @@ public:
       if (last_state == GAME_STATE_IN_GAME) {
         m_manager.currentTrack.stopMusic(&assets);
         m_manager.swapTrack("menu");
-        m_manager.currentTrack.startMusic(&assets);
+        if (GetMusicTimePlayed(m_manager.currentTrack.fetch(&assets)) > 0.0f)
+          m_manager.currentTrack.resumeMusic(&assets);
+        else
+          m_manager.currentTrack.startMusic(&assets);
       } else if (state == GAME_STATE_IN_GAME) {
         m_manager.currentTrack.stopMusic(&assets);
         m_manager.swapTrack("ingame");
-        m_manager.currentTrack.startMusic(&assets);
+        if (GetMusicTimePlayed(m_manager.currentTrack.fetch(&assets)) > 0.0f)
+          m_manager.currentTrack.resumeMusic(&assets);
+        else
+          m_manager.currentTrack.startMusic(&assets);
       }
     }
   };
