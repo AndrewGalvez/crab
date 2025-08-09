@@ -57,11 +57,13 @@ private:
     gold_manager.updateGoldMagnet(p.x + p.w / 2.0f, p.y + p.h / 2.0f,
                                   u.get("goldmagnet")->getCurrent());
   }
+
   void update_hpeffects() {
     for (HealthPotionEffect &hpe : hpeffects) {
       hpe.update();
     }
   }
+
   void update_enemies(float dt, SoundManager &s,
                       std::vector<int> &to_erase_enemies) {
     for (int i = 0; i < enemies.size(); i++) {
@@ -77,6 +79,7 @@ private:
       }
     }
   }
+
   void update_bullets(std::vector<int> &to_erase_enemies, SoundManager &s) {
     std::vector<int> to_remove;
 
@@ -109,6 +112,7 @@ private:
       bullets.erase(bullets.begin() + i);
     }
   }
+
   void update_enemy_deaths() {
     std::vector<int> to_delete;
 
@@ -127,6 +131,7 @@ private:
       enemydeaths.erase(enemydeaths.begin() + i);
     }
   };
+
   void update_player(SoundManager &s, float dt) {
     p.update(dt, map.size, map);
     currentGun.focusOn(p.x + p.w / 2, p.y + p.w / 2, 40);
@@ -142,6 +147,7 @@ private:
       currentGun.cooldown--;
     }
   }
+
   void update_hpotions(SoundManager &s) {
     if (IsKeyPressed(KEY_Z) && inv.gethPotions() > 0 && p.health < 100) {
       p.health += 50;
@@ -215,6 +221,7 @@ public:
     gold_manager.setSpawnChance(u.get("goldspawns")->getCurrent());
     currentGun.bSpeed = u.get("bulletspeed")->getCurrent();
   }
+
   void draw(GameAssets *assets, int frame, int f2, Upgrades &u) {
     BeginMode2D(cam);
     map.draw();
