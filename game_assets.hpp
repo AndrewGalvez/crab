@@ -21,6 +21,8 @@ public:
         LoadTexture("assets/upgrade_icons/GoldSpawns.png");
     textures["u_goldmagnet"] =
         LoadTexture("assets/upgrade_icons/GoldMagnet.png");
+    textures["u_bulletspeed"] =
+        LoadTexture("assets/upgrade_icons/FasterProjectile.png");
     shaders["grain"] = LoadShader(0, "shaders/grain.fs");
     shaders["whitemask"] = LoadShader(0, "shaders/white_mask.fs");
     musics["menu"] = LoadMusicStream("assets/menu.mp3");

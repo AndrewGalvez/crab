@@ -75,16 +75,36 @@ public:
   }
 };
 
+class Upgrade_Bullet_Speed : public Upgrade {
+public:
+  Upgrade_Bullet_Speed() : Upgrade() {
+    current = 5.0f;
+    cost = 1;
+    id = "bulletspeed";
+    name = "Bullet Speed";
+    texid = "u_bulletspeed";
+  };
+
+  void buy(Inventory &inv) override {
+    current *= 1.5;
+    inv.removeGold(cost);
+    cost += 2;
+  }
+};
+
 class Upgrades {
 private:
   std::map<std::string, std::unique_ptr<Upgrade>> upgrades;
 
 public:
-  Upgrades() {
+  void init() {
     upgrades["goldmultiplier"] = std::make_unique<Upgrade_Gold_Multiplier>();
     upgrades["goldspawns"] = std::make_unique<Upgrade_Gold_Spawns>();
     upgrades["goldmagnet"] = std::make_unique<Upgrade_Gold_Magnet>();
+    upgrades["bulletspeed"] = std::make_unique<Upgrade_Bullet_Speed>();
   };
+
+  Upgrades() { init(); }
 
   void buyUpgrade(std::string key, Inventory &inv) {
     if (upgrades.find(key) != upgrades.end())
@@ -115,7 +135,9 @@ public:
       return upgrades.begin()->first;
     }
   }
+
   std::string getPrev(const std::string &currentKey) const {
+
     if (upgrades.empty()) {
       return ""; // Handle empty map case
     }

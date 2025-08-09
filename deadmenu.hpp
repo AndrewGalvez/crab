@@ -46,7 +46,8 @@ public:
     EndShaderMode();
   }
 
-  void update(float dt, SoundManager &s, GameState &state, GameRunner &r) {
+  void update(float dt, SoundManager &s, GameState &state, GameRunner &r,
+              Upgrades &u) {
     if (headerpos >= headerresetx) {
       headerpos = -100 - headerresetx;
       headerpos -= headerscrollspeed;
@@ -57,6 +58,7 @@ public:
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       if (new_game_button.isMouseOn()) {
         r.reset();
+        u.init();
         s.play("select");
         state = GAME_STATE_IN_GAME;
       }

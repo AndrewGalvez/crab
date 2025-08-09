@@ -182,6 +182,7 @@ public:
     bullets.clear();
     level = 0;
     levelFinished = false;
+    dead = false;
 
     camoffsetbase = {(float)240 / 2, (float)240 / 2};
     cam.offset = {(float)240 / 2, (float)240 / 2};
@@ -212,6 +213,7 @@ public:
     }
 
     gold_manager.setSpawnChance(u.get("goldspawns")->getCurrent());
+    currentGun.bSpeed = u.get("bulletspeed")->getCurrent();
   }
   void draw(GameAssets *assets, int frame, int f2, Upgrades &u) {
     BeginMode2D(cam);
@@ -223,14 +225,17 @@ public:
     for (Enemy &e : enemies) {
       e.draw(assets, frame);
     }
+
     for (EnemyDeath &ed : enemydeaths) {
       if (f2 == 0)
         ed.incrementFrame();
       ed.draw(assets);
     }
+
     for (Bullet &b : bullets) {
       b.draw();
     }
+
     for (HealthPotionEffect &hpe : hpeffects) {
       hpe.draw();
     }
@@ -244,6 +249,7 @@ public:
       finishedText2.draw();
     }
   }
+
   void update(SoundManager &s, GameState &state, Upgrades &u) {
     if (freezeFrames > 0) {
       freezeFrames--;
