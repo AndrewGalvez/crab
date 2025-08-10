@@ -219,7 +219,7 @@ public:
     }
 
     gold_manager.setSpawnChance(u.get("goldspawns")->getCurrent());
-    currentGun.bSpeed = u.get("bulletspeed")->getCurrent();
+    currentGun.applyUpgrades(u);
   }
 
   void draw(GameAssets *assets, int frame, int f2, Upgrades &u) {

@@ -92,6 +92,23 @@ public:
   }
 };
 
+class Upgrade_Bullet_Ricochet : public Upgrade {
+public:
+  Upgrade_Bullet_Ricochet() : Upgrade() {
+    current = 0.0f;
+    cost = 5;
+    id = "bulletricochet";
+    name = "Ricochet";
+    texid = "u_bulletricochet";
+  };
+
+  void buy(Inventory &inv) override {
+    ++current;
+    inv.removeGold(cost);
+    cost *= 2;
+  }
+};
+
 class Upgrades {
 private:
   std::map<std::string, std::unique_ptr<Upgrade>> upgrades;
@@ -102,6 +119,7 @@ public:
     upgrades["goldspawns"] = std::make_unique<Upgrade_Gold_Spawns>();
     upgrades["goldmagnet"] = std::make_unique<Upgrade_Gold_Magnet>();
     upgrades["bulletspeed"] = std::make_unique<Upgrade_Bullet_Speed>();
+    upgrades["bulletricochet"] = std::make_unique<Upgrade_Bullet_Ricochet>();
   };
 
   Upgrades() { init(); }

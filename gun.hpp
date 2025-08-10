@@ -1,6 +1,7 @@
 #pragma once
 #include "player.hpp"
 #include "raylib.h"
+#include "upgrades.hpp"
 #include "utils.hpp"
 #include <cmath>
 #include <raymath.h>
@@ -15,6 +16,7 @@ public:
   float radius = 0;
 
   float bSpeed = 5.0f;
+  float bRicochets = 0.0f;
   int baseCooldown = 25;
   int cooldown = baseCooldown;
 
@@ -42,5 +44,10 @@ public:
     x = cX;
     y = cY;
     this->radius = r;
+  }
+
+  void applyUpgrades(Upgrades &upgrades) {
+    this->bSpeed = upgrades.get("bulletspeed")->getCurrent();
+    this->bRicochets = upgrades.get("bulletricochet")->getCurrent();
   }
 };
