@@ -35,13 +35,13 @@ private:
   GUIText finishedText2 =
       GUIText(240 / 2, 55, 18, "Return to shop: Q", GREEN, true);
 
-  void shoot(float speed) {
+  void shoot(float speed, unsigned int ricochets) {
     float angleRad = -currentGun.rot * DEG2RAD;
     Vector2 dir = Vector2Scale({cosf(angleRad), -sinf(angleRad)}, -speed);
     Vector2 sOffset = Vector2Scale({cosf(angleRad), -sinf(angleRad)}, -40);
     Vector2 origin = {(float)p.x + p.w / 2.0f, (float)p.y + p.h / 2.0f};
     Vector2 spawnPos = Vector2Add(origin, sOffset);
-    bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir));
+    bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir, ricochets));
   }
 
   void update_gold(SoundManager &s, Upgrades &u) {
@@ -85,11 +85,26 @@ private:
 
     for (int i = 0; i < bullets.size(); i++) {
       Bullet &b = bullets[i];
-      b.move();
       int bx = b.x / map.TILE_SIZE;
       int by = b.y / map.TILE_SIZE;
-      if (map.get(bx, by)) {
-        to_remove.push_back(i);
+      b.move();
+      int bnx = b.x / map.TILE_SIZE;
+      int bny = b.y / map.TILE_SIZE;
+
+      if (map.get(bnx, bny)) {
+        if (b.ricochets <= 0) {
+          to_remove.push_back(i);
+          continue;
+        }
+        b.ricochets--;
+        if (!map.get(bx, bny)) {
+          b.dir.x *= -1;
+        } else if (!map.get(bnx, by)) {
+          b.dir.y *= -1;
+        } else {
+          b.dir.x *= -1;
+          b.dir.y *= -1;
+        }
         continue;
       }
 
@@ -139,7 +154,7 @@ private:
 
     if (currentGun.cooldown == 0) {
       if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        shoot(currentGun.bSpeed);
+        shoot(currentGun.bSpeed, currentGun.bRicochets);
         currentGun.cooldown = currentGun.baseCooldown;
         s.play("shoot");
       }

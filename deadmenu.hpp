@@ -47,7 +47,7 @@ public:
   }
 
   void update(float dt, SoundManager &s, GameState &state, GameRunner &r,
-              Upgrades &u) {
+              Upgrades &u, Inventory &inv) {
     if (headerpos >= headerresetx) {
       headerpos = -100 - headerresetx;
       headerpos -= headerscrollspeed;
@@ -59,11 +59,14 @@ public:
       if (new_game_button.isMouseOn()) {
         r.reset();
         u.init();
+        inv.reset();
         s.play("select");
         state = GAME_STATE_IN_GAME;
       }
       if (main_menu_button.isMouseOn()) {
         r.reset();
+        u.init();
+        inv.reset();
         s.play("select");
         state = GAME_STATE_MAIN_MENU;
       }

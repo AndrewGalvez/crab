@@ -97,7 +97,8 @@ public:
       settings_menu.update(s_manager, &state, &settings);
       break;
     case GAME_STATE_DEAD:
-      dead_menu.update(GetFrameTime(), s_manager, state, runner, upgrades);
+      dead_menu.update(GetFrameTime(), s_manager, state, runner, upgrades,
+                       inventory);
       break;
     case GAME_STATE_SHOP:
       shop_menu.update(s_manager, inventory, upgrades, state);

@@ -6,10 +6,12 @@ public:
   int x;
   int y;
   int r;
+  unsigned int ricochets = 0;
   Vector2 dir;
   Color c = PURPLE;
 
-  Bullet(int x, int y, int r, Vector2 dir) : x(x), y(y), r(r), dir(dir) {}
+  Bullet(int x, int y, int r, Vector2 dir, unsigned int ricochets)
+      : x(x), y(y), r(r), dir(dir), ricochets(ricochets) {}
 
   void draw() { DrawCircle(x, y, r, c); }
 

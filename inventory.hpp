@@ -5,6 +5,11 @@ private:
   int hPotions = 2; // starting amount
 
 public:
+  void reset() {
+    gold = 0;
+    hPotions = 2;
+  }
+
   void addGold(int amount) { gold += amount; }
   void removeGold(int amount) { gold -= amount; }
 
