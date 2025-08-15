@@ -14,6 +14,7 @@
 #include "upgrades.hpp"
 #include <cassert>
 #include <cstdlib>
+#include <iostream>
 #include <raymath.h>
 #include <vector>
 
@@ -224,11 +225,26 @@ public:
       int tX = 0;
       int tY = 0;
 
-      while (map.get(tX, tY)) {
+      while (true) {
         srand(time(0));
-        tX = (int)(rand() % 18) + 1;
-        tY = (int)(rand() % 18) + 1;
+        tX = GetRandomValue(1, 18);
+        tY = GetRandomValue(1, 18);
+        if (!map.get(tX, tY))
+          if (Vector2Distance({tX * 32.0f, tY * 32.0f},
+                              {(float)p.x, (float)p.y}) > 32 * 3) {
+            bool enemyDistGood = true;
+            for (Enemy &e : enemies) {
+              if (Vector2Distance({e.getX(), e.getY()},
+                                  {tX * 32.0f, tY * 32.0f}) < 32 * 3) {
+                enemyDistGood = false;
+              }
+            }
+            if (enemyDistGood)
+              break;
+          }
       }
+
+      std::cout << tX << ' ' << tY << std::endl;
 
       enemies.push_back(Enemy(tX * 32, tY * 32));
     }
