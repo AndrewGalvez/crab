@@ -1,3 +1,5 @@
-main
+game
+obj/
 editor
 data/settings
+data/save

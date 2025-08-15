@@ -2,6 +2,7 @@
 #include "game_assets.hpp"
 #include "game_state.hpp"
 #include "gui.hpp"
+#include "save.hpp"
 #include "sound.hpp"
 #include <raylib.h>
 class MainMenu {
@@ -16,9 +17,9 @@ private:
   GUIText develop_text =
       GUIText(25, 50, 20, (const char *)"by Andy Galvez", WHITE, false);
 
-  GUIButton start_button =
+  GUIButton load_save_button =
       GUIButton(10, 80, 150, 40, GRAY, DARKGRAY, false,
-                GUIText(85, 90, 21, "START GAME", BLACK, true), true);
+                GUIText(85, 90, 24, "LOAD SAVE", BLACK, true), true);
   GUIButton quit_button =
       GUIButton(10, 130, 150, 40, GRAY, DARKGRAY, false,
                 GUIText(85, 140, 24, "QUIT GAME", BLACK, true));
@@ -26,6 +27,10 @@ private:
   GUIButton settings_button =
       GUIButton(165, 80, 150, 40, GRAY, DARKGRAY, false,
                 GUIText(240, 90, 24, "SETTINGS", BLACK, true));
+
+  GUIButton new_game_button =
+      GUIButton(165, 130, 150, 40, GRAY, DARKGRAY, false,
+                GUIText(240, 138, 28, "NEW GAME", BLACK, true));
 
 public:
   void draw(GameAssets *game_assets, int frame) {
@@ -40,9 +45,10 @@ public:
     SetShaderValue(*grainShader, resLoc, &res, SHADER_UNIFORM_VEC2);
 
     BeginShaderMode(*grainShader);
-    start_button.draw();
+    load_save_button.draw();
     quit_button.draw();
     settings_button.draw();
+    new_game_button.draw();
     EndShaderMode();
     title_text.draw();
     develop_text.draw();
@@ -52,20 +58,25 @@ public:
                    {225, 0, 16 * 4, 16 * 4}, {0, 0}, 0.0f, WHITE);
   };
 
-  void update(SoundManager &s_manager, GameState *state, bool **should_exit) {
-    if (start_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ||
-        IsKeyPressed(KEY_S)) {
+  void update(SoundManager &s_manager, GameState *state, bool **should_exit,
+              SaveManager &s) {
+    if ((load_save_button.isMouseOn()) &&
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      s.load_game();
       *state = GAME_STATE_IN_GAME;
       s_manager.play("select");
     }
-    if (quit_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ||
-        IsKeyPressed(KEY_Q)) {
+    if ((new_game_button.isMouseOn()) &&
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      *state = GAME_STATE_IN_GAME;
+      s_manager.play("select");
+    }
+    if (quit_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       **should_exit = true;
       s_manager.play("select");
     }
     if (settings_button.isMouseOn() &&
-            IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ||
-        IsKeyPressed(KEY_E)) {
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       *state = GAME_STATE_SETTINGS;
       s_manager.play("select");
     }

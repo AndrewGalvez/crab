@@ -10,6 +10,7 @@
 #include "gun.hpp"
 #include "inventory.hpp"
 #include "raylib.h"
+#include "save.hpp"
 #include "sound.hpp"
 #include "upgrades.hpp"
 #include <cassert>
@@ -60,6 +61,7 @@ private:
   }
 
   void update_hpeffects() {
+
     for (HealthPotionEffect &hpe : hpeffects) {
       hpe.update();
     }
@@ -288,7 +290,7 @@ public:
     }
   }
 
-  void update(SoundManager &s, GameState &state, Upgrades &u) {
+  void update(SoundManager &s, GameState &state, Upgrades &u, SaveManager &sm) {
     if (freezeFrames > 0) {
       freezeFrames--;
       screenShake.x += GetRandomValue(-10, 10);
@@ -344,6 +346,7 @@ public:
     }
 
     if (levelFinished && IsKeyPressed(KEY_Q)) {
+      sm.save_game();
       state = GAME_STATE_SHOP;
     }
   }

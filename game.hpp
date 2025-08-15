@@ -7,6 +7,7 @@
 #include "game_ui.hpp"
 #include "mainmenu.hpp"
 #include "music.hpp"
+#include "save.hpp"
 #include "settingsmenu.hpp"
 #include "shop.hpp"
 #include "sound.hpp"
@@ -27,12 +28,15 @@ private:
   SettingsMenu settings_menu;
   ShopMenu shop_menu;
   DeadMenu dead_menu;
+  SaveManager savemanager;
 
   MusicManager m_manager;
   SoundManager s_manager = SoundManager(true, &assets);
 
   int frame = 0;
   int frameIncrementTimer = 0;
+
+  friend class SaveManager;
 
 public:
   Game() {
@@ -47,6 +51,7 @@ public:
     s_manager.enabled = settings.soundEnabled;
     settings_menu.music_enabled_checkbox.checked = settings.musicEnabled;
     settings_menu.sound_enabled_checkbox.checked = settings.soundEnabled;
+    upgrades.init();
   }
 
   void draw() {
@@ -87,10 +92,10 @@ public:
 
     switch (state) {
     case GAME_STATE_MAIN_MENU:
-      main_menu.update(s_manager, &state, &should_exit);
+      main_menu.update(s_manager, &state, &should_exit, savemanager);
       break;
     case GAME_STATE_IN_GAME:
-      runner.update(s_manager, state, upgrades);
+      runner.update(s_manager, state, upgrades, savemanager);
       ui.update();
       break;
     case GAME_STATE_SETTINGS:
