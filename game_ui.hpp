@@ -19,20 +19,14 @@ public:
   void setRunner(GameRunner *runner) { this->runner = runner; };
 
   void drawBg(GameAssets *assets, int frame) {
-    Shader *grainShader = assets->fetchShader("grain");
-    int timeLoc = GetShaderLocation(*grainShader, "time");
-    int resLoc = GetShaderLocation(*grainShader, "resolution");
-
     float time = floor(frame * 5);
     Vector2 res = {320, 240};
+    assets->setShaderValue("grain", "time", time);
+    assets->setShaderValue("grain", "resolution", res);
 
-    SetShaderValue(*grainShader, timeLoc, &time, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(*grainShader, resLoc, &res, SHADER_UNIFORM_VEC2);
-
-    BeginShaderMode(*grainShader);
-
+    assets->beginShaderMode("grain");
     DrawRectangle(240, 0, 80, 240, BLUE);
-    EndShaderMode();
+    assets->endShaderMode("grain");
   }
 
   void draw_health_bar() {

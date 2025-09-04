@@ -34,22 +34,19 @@ private:
 
 public:
   void draw(GameAssets *game_assets, int frame) {
-    Shader *grainShader = game_assets->fetchShader("grain");
-    int timeLoc = GetShaderLocation(*grainShader, "time");
-    int resLoc = GetShaderLocation(*grainShader, "resolution");
-
+    // Set shader uniforms and begin shader mode (safe for WebGL)
     float time = floor(GetTime() * 9);
     Vector2 res = {320, 240};
-
-    SetShaderValue(*grainShader, timeLoc, &time, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(*grainShader, resLoc, &res, SHADER_UNIFORM_VEC2);
-
-    BeginShaderMode(*grainShader);
+    game_assets->setShaderValue("grain", "time", time);
+    game_assets->setShaderValue("grain", "resolution", res);
+    
+    game_assets->beginShaderMode("grain");
     load_save_button.draw();
     quit_button.draw();
     settings_button.draw();
     new_game_button.draw();
-    EndShaderMode();
+    game_assets->endShaderMode("grain");
+    
     title_text.draw();
     develop_text.draw();
     credit_text.draw();

@@ -4,6 +4,11 @@
 #include <iostream>
 
 void SaveManager::save_game() {
+  if (!g) {
+    std::cout << "ERROR: SaveManager::g pointer is null! Cannot save game." << std::endl;
+    return;
+  }
+
   std::string data;
 
   std::string data_runner;
@@ -42,6 +47,11 @@ void SaveManager::save_game() {
 }
 
 void SaveManager::load_game() {
+  if (!g) {
+    std::cout << "ERROR: SaveManager::g pointer is null! Cannot load game." << std::endl;
+    return;
+  }
+
   std::ifstream stream("data/gamesave");
   if (!stream)
     return;
