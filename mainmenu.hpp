@@ -8,6 +8,10 @@
 #include <raylib.h>
 #include <functional>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 class MainMenu {
 private:
   FlexContainer titleContainer;
@@ -121,7 +125,17 @@ public:
     });
     
     quitButton->setCallback([&]() {
+#ifdef __EMSCRIPTEN__
+      // In WebAssembly, navigate to home page instead of quitting
+      EM_ASM({
+        if (Module['go_to_home']) {
+          Module['go_to_home']();
+        }
+      });
+#else
+      // Native build: quit the game
       **should_exit = true;
+#endif
       s_manager.play("select");
     });
     
