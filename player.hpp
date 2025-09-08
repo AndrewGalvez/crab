@@ -32,13 +32,13 @@ public:
 
     DrawCircle(x + w / 2, y + h / 2, gmr, ColorAlpha(DARKBLUE, 0.33));
 
-    if (freezeFrames > 0 && wshader->id != 0)
+    if (freezeFrames > 0)
       BeginShaderMode(*wshader);
 
     DrawTexturePro(*tex, {(float)16 * frame, (float)animY, 16, 16},
                    {(float)x, (float)y, (float)w, (float)h}, {0, 0}, 0,
                    RAYWHITE);
-    if (freezeFrames > 0 && wshader->id != 0)
+    if (freezeFrames > 0)
       EndShaderMode();
   };
 

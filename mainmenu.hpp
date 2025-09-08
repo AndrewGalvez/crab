@@ -2,99 +2,57 @@
 #include "game_assets.hpp"
 #include "game_state.hpp"
 #include "gui.hpp"
-#include "flex_gui.hpp"
 #include "save.hpp"
 #include "sound.hpp"
 #include <raylib.h>
-#include <functional>
-
 class MainMenu {
 private:
-  FlexContainer titleContainer;
-  FlexContainer buttonContainer;
-  FlexContainer creditContainer;
-  
-  FlexText* titleText;
-  FlexText* authorText;
-  FlexText* wasmText;
-  FlexText* musicCreditText;
-  
-  FlexButton* newGameButton;
-  FlexButton* loadSaveButton;
-  FlexButton* settingsButton;
-  FlexButton* quitButton;
+  GUIText title_text =
+      GUIText(10, 10, 48, (const char *)"Crab (2)", WHITE, false);
+
+  GUIText credit_text = GUIText(
+      320 / 2, 220, 16, (const char *)"Music: Fesliyan Studios - David Renda",
+      WHITE, true);
+
+  GUIText develop_text =
+      GUIText(25, 50, 20, (const char *)"by Andy Galvez", WHITE, false);
+
+  GUIButton load_save_button =
+      GUIButton(10, 80, 150, 40, GRAY, DARKGRAY, false,
+                GUIText(85, 90, 24, "LOAD SAVE", BLACK, true), true);
+  GUIButton quit_button =
+      GUIButton(10, 130, 150, 40, GRAY, DARKGRAY, false,
+                GUIText(85, 140, 24, "QUIT GAME", BLACK, true));
+
+  GUIButton settings_button =
+      GUIButton(165, 80, 150, 40, GRAY, DARKGRAY, false,
+                GUIText(240, 90, 24, "SETTINGS", BLACK, true));
+
+  GUIButton new_game_button =
+      GUIButton(165, 130, 150, 40, GRAY, DARKGRAY, false,
+                GUIText(240, 138, 28, "NEW GAME", BLACK, true));
 
 public:
-  MainMenu() {
-    // Setup title container
-    titleContainer.setContainer(10, 10, 300, 80);
-    titleContainer.setLayout(FlexContainer::VERTICAL);
-    titleContainer.setSpacing(2);
-    titleContainer.setPadding(0);
-    titleContainer.setMargin(1);
-    titleContainer.setDebugOverflow(false);
-    
-    titleText = titleContainer.add<FlexText>("Crab (2)", 48, WHITE);
-    authorText = titleContainer.add<FlexText>("by Andy Galvez", 20, WHITE);
-    
-#ifdef __EMSCRIPTEN__
-    wasmText = titleContainer.add<FlexText>("WASM: James Yacoube :] ", 16, Color{255, 107, 53, 255});
-#endif
-    
-    // Setup button container with wrap layout - smaller margins and spacing
-    buttonContainer.setContainer(10, 100, 300, 100);
-    buttonContainer.setLayout(FlexContainer::WRAP);
-    buttonContainer.setSpacing(5);  
-    buttonContainer.setPadding(2);   
-    buttonContainer.setMargin(3); 
-    buttonContainer.setDebugOverflow(false);  
-    
-    newGameButton = buttonContainer.add<FlexButton>("NEW GAME", 20, GRAY, DARKGRAY, BLACK);  // Smaller font
-    loadSaveButton = buttonContainer.add<FlexButton>("LOAD SAVE", 20, GRAY, DARKGRAY, BLACK);
-    settingsButton = buttonContainer.add<FlexButton>("SETTINGS", 20, GRAY, DARKGRAY, BLACK);
-    quitButton = buttonContainer.add<FlexButton>("QUIT GAME", 20, GRAY, DARKGRAY, BLACK);
-    
-    // Setup credit container
-    creditContainer.setContainer(10, 215, 300, 25);
-    creditContainer.setLayout(FlexContainer::VERTICAL);
-    creditContainer.setPadding(0);
-    creditContainer.setMargin(0);
-    creditContainer.setDebugOverflow(false);  // Turn off debug now
-    musicCreditText = creditContainer.add<FlexText>("Music: Fesliyan Studios - David Renda", 12, WHITE, false);
-    
-    // Layout all containers
-    layoutElements();
-  }
-  
-  void layoutElements() {
-    titleContainer.layoutElements();
-    buttonContainer.layoutElements();
-    creditContainer.layoutElements();
-    creditContainer.centerHorizontally();  // Center the credit text
-  }
   void draw(GameAssets *game_assets, int frame) {
-    // Smart layout - only recalculates when needed (screen size change, etc.)
-    titleContainer.layoutElements();
-    buttonContainer.layoutElements();
-    creditContainer.layoutElements();
-    creditContainer.centerHorizontally();  // Center the credit text
-    
-    // Set shader uniforms and begin shader mode (safe for WebGL)
+    Shader *grainShader = game_assets->fetchShader("grain");
+    int timeLoc = GetShaderLocation(*grainShader, "time");
+    int resLoc = GetShaderLocation(*grainShader, "resolution");
+
     float time = floor(GetTime() * 9);
     Vector2 res = {320, 240};
-    game_assets->setShaderValue("grain", "time", time);
-    game_assets->setShaderValue("grain", "resolution", res);
-    
-    // Draw buttons with shader effect
-    game_assets->beginShaderMode("grain");
-    buttonContainer.draw();
-    game_assets->endShaderMode("grain");
-    
-    // Draw text elements without shader
-    titleContainer.draw();
-    creditContainer.draw();
-    
-    // Draw animated crab sprite
+
+    SetShaderValue(*grainShader, timeLoc, &time, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(*grainShader, resLoc, &res, SHADER_UNIFORM_VEC2);
+
+    BeginShaderMode(*grainShader);
+    load_save_button.draw();
+    quit_button.draw();
+    settings_button.draw();
+    new_game_button.draw();
+    EndShaderMode();
+    title_text.draw();
+    develop_text.draw();
+    credit_text.draw();
     DrawTexturePro(*game_assets->fetchTexture("crab"),
                    {16 * (float)(frame % 4), 0, 16, 16},
                    {225, 0, 16 * 4, 16 * 4}, {0, 0}, 0.0f, WHITE);
@@ -102,32 +60,25 @@ public:
 
   void update(SoundManager &s_manager, GameState *state, bool **should_exit,
               SaveManager &s) {
-    
-    // Set up button callbacks
-    newGameButton->setCallback([&]() {
-      *state = GAME_STATE_IN_GAME;
-      s_manager.play("select");
-    });
-    
-    loadSaveButton->setCallback([&]() {
+    if ((load_save_button.isMouseOn()) &&
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       s.load_game();
       *state = GAME_STATE_IN_GAME;
       s_manager.play("select");
-    });
-    
-    settingsButton->setCallback([&]() {
-      *state = GAME_STATE_SETTINGS;
+    }
+    if ((new_game_button.isMouseOn()) &&
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      *state = GAME_STATE_IN_GAME;
       s_manager.play("select");
-    });
-    
-    quitButton->setCallback([&]() {
+    }
+    if (quit_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       **should_exit = true;
       s_manager.play("select");
-    });
-    
-    // Handle button clicks
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-      buttonContainer.handleClick();
+    }
+    if (settings_button.isMouseOn() &&
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      *state = GAME_STATE_SETTINGS;
+      s_manager.play("select");
     }
   };
 };

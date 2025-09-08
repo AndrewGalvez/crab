@@ -25,18 +25,8 @@ public:
         LoadTexture("assets/upgrade_icons/FasterProjectile.png");
     textures["u_bulletricochet"] =
         LoadTexture("assets/upgrade_icons/Ricochet.png");
-    // Try to load shaders, with WebGL fallbacks
     shaders["grain"] = LoadShader(0, "shaders/grain.fs");
-    if (shaders["grain"].id == 0) {
-      // Fallback for WebGL
-      shaders["grain"] = LoadShader(0, "shaders/grain_webgl.fs");
-    }
-    
     shaders["whitemask"] = LoadShader(0, "shaders/white_mask.fs");
-    if (shaders["whitemask"].id == 0) {
-      // Fallback for WebGL
-      shaders["whitemask"] = LoadShader(0, "shaders/white_mask_webgl.fs");
-    }
     musics["menu"] = LoadMusicStream("assets/menu.mp3");
     musics["ingame"] = LoadMusicStream("assets/ingame.mp3");
     sounds["select"] = LoadSound("assets/select.wav");
@@ -54,38 +44,4 @@ public:
   Music *fetchMusic(const std::string &key) { return &musics[key]; }
   Sound *fetchSound(const std::string &key) { return &sounds[key]; }
   Shader *fetchShader(const std::string &key) { return &shaders[key]; }
-  
-  bool isShaderValid(const std::string &key) {
-    auto it = shaders.find(key);
-    return it != shaders.end() && it->second.id != 0;
-  }
-  
-  // Safe shader operations that handle WebGL compatibility
-  void beginShaderMode(const std::string &key) {
-    if (isShaderValid(key)) {
-      BeginShaderMode(*fetchShader(key));
-    }
-  }
-  
-  void endShaderMode(const std::string &key) {
-    if (isShaderValid(key)) {
-      EndShaderMode();
-    }
-  }
-  
-  void setShaderValue(const std::string &key, const std::string &uniform, float value) {
-    if (isShaderValid(key)) {
-      Shader *shader = fetchShader(key);
-      int location = GetShaderLocation(*shader, uniform.c_str());
-      SetShaderValue(*shader, location, &value, SHADER_UNIFORM_FLOAT);
-    }
-  }
-  
-  void setShaderValue(const std::string &key, const std::string &uniform, Vector2 value) {
-    if (isShaderValid(key)) {
-      Shader *shader = fetchShader(key);
-      int location = GetShaderLocation(*shader, uniform.c_str());
-      SetShaderValue(*shader, location, &value, SHADER_UNIFORM_VEC2);
-    }
-  }
 };
