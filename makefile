@@ -62,11 +62,24 @@ debug: $(TARGET)
 # Release build (default is already optimized)
 release: $(TARGET)
 
+# Clean WebAssembly build files
+clean-wasm:
+	rm -f index.html index.js index.wasm index.data
+
+# Build Raylib To WASM
+init_wasm:
+	rm -rf raylib_wasm
+	mkdir -p raylib_wasm
+	cd raylib_wasm && git clone https://github.com/raysan5/raylib.git
+	cd raylib_wasm/raylib && mkdir -p build
+	cd raylib_wasm/raylib/build && emcmake cmake ..
+	cd raylib_wasm/raylib/build && emmake make -j6
+
 # WebAssembly build target
 wasm: clean-wasm
 	em++ $(SOURCES) \
-		-I/Users/james/repos/raylib/src \
-		-L/Users/james/repos/raylib/build/raylib \
+		-Iraylib_wasm/raylib/src \
+		-Lraylib_wasm/raylib/build/raylib \
 		-lraylib -DBUILD_EDITOR=1 \
 		-s USE_GLFW=3 -s USE_WEBGL2=1 \
 		-s ALLOW_MEMORY_GROWTH=1 \
@@ -78,14 +91,9 @@ wasm: clean-wasm
 
 	cp index_template.html index.html
 
-# Clean WebAssembly build files
-clean-wasm:
-	rm -f index.html index.js index.wasm index.data
-
 # Serve the WebAssembly build locally
-serve: wasm
-	@echo "Starting local web server on http://localhost:8000"
-	@echo "Press Ctrl+C to stop the server"
+serve-wasm: wasm
+	@echo "Starting web server on http://localhost:8000"
 	@which python3 >/dev/null 2>&1 && python3 -m http.server 8000 || python -m SimpleHTTPServer 8000
 
 # Help
