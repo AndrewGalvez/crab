@@ -3,3 +3,4 @@ obj/
 editor
 data/settings
 data/save
+raylib_wasm
