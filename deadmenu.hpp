@@ -28,22 +28,15 @@ public:
     header.draw();
     header2.draw();
 
-    Shader *grainShader = assets.fetchShader("grain");
-    int timeLoc = GetShaderLocation(*grainShader, "time");
-    int resLoc = GetShaderLocation(*grainShader, "resolution");
-
     float time = floor(GetTime() * 9);
     Vector2 res = {320, 240};
+    assets.setShaderValue("grain", "time", time);
+    assets.setShaderValue("grain", "resolution", res);
 
-    SetShaderValue(*grainShader, timeLoc, &time, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(*grainShader, resLoc, &res, SHADER_UNIFORM_VEC2);
-
-    BeginShaderMode(*grainShader);
-
+    assets.beginShaderMode("grain");
     new_game_button.draw();
     main_menu_button.draw();
-
-    EndShaderMode();
+    assets.endShaderMode("grain");
   }
 
   void update(float dt, SoundManager &s, GameState &state, GameRunner &r,

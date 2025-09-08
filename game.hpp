@@ -52,6 +52,7 @@ public:
     settings_menu.music_enabled_checkbox.checked = settings.musicEnabled;
     settings_menu.sound_enabled_checkbox.checked = settings.soundEnabled;
     upgrades.init();
+    savemanager.g = this;  // Initialize SaveManager's game pointer
   }
 
   void draw() {

@@ -136,17 +136,12 @@ public:
   }
 
   void draw(GameAssets &assets, int frame, Upgrades &upgrades) {
-    Shader *grainShader = assets.fetchShader("grain");
-    int timeLoc = GetShaderLocation(*grainShader, "time");
-    int resLoc = GetShaderLocation(*grainShader, "resolution");
-
     float time = floor(GetTime() * 9);
     Vector2 res = {320, 240};
+    assets.setShaderValue("grain", "time", time);
+    assets.setShaderValue("grain", "resolution", res);
 
-    SetShaderValue(*grainShader, timeLoc, &time, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(*grainShader, resLoc, &res, SHADER_UNIFORM_VEC2);
-
-    BeginShaderMode(*grainShader);
+    assets.beginShaderMode("grain");
 
     finish_button.draw();
     main_menu_button.draw();
@@ -154,7 +149,7 @@ public:
     button_buy.draw();
     hpotion_button.draw();
     DrawRectangle(10, 110, 100, 115, DARKBLUE);
-    EndShaderMode();
+    assets.endShaderMode("grain");
 
     draw_upgrades(assets, upgrades);
 

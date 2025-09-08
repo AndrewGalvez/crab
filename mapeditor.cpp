@@ -321,11 +321,12 @@ public:
   }
 };
 
+#if BUILD_EDITOR == 0
 int main() {
   TileMapEditor editor;
   editor.run();
   return 0;
 }
-
+#endif
 // Compilation command (make sure you have raylib installed):
 // g++ -o map_editor map_editor.cpp -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
