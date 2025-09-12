@@ -27,10 +27,6 @@ private:
       GUIButton(10, 10, 100, 40, GRAY, DARKGRAY, false,
                 GUIText(60, 20, 30, "Finish", BLACK, true), true);
 
-  GUIButton save_button =
-      GUIButton(320 - 110, 10, 100, 40, GRAY, DARKGRAY, false,
-                GUIText(320 - 60, 20, 30, "Save", BLACK, true), true);
-
   GUIButton main_menu_button =
       GUIButton(10, 55, 100, 40, GRAY, DARKGRAY, false,
                 GUIText(60, 65, 30, "Menu", BLACK, true), true);
@@ -150,7 +146,6 @@ public:
 
     finish_button.draw();
     main_menu_button.draw();
-    save_button.draw();
     button_buy.draw();
     hpotion_button.draw();
     DrawRectangle(10, 110, 100, 115, DARKBLUE);

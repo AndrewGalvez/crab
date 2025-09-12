@@ -12,7 +12,7 @@ DATADIR = data
 TARGET = game
 
 # Source files - add all your .cpp files here
-SOURCES = main.cpp save.cpp
+SOURCES = main.cpp
 
 # Object files (automatically generated from sources)
 OBJECTS = $(SOURCES:%.cpp=$(OBJDIR)/%.o)
