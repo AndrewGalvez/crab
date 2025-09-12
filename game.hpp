@@ -35,18 +35,23 @@ private:
   int frameIncrementTimer = 0;
 
 public:
-  Game() {
-    settings.loadFromFile("data/settings");
-    ui.setRunner(&this->runner);
-    shop_menu.setRunner(&runner);
-    state = GAME_STATE_MAIN_MENU;
-    assets.loadAssets();
+  void loadSettings() {
     if (settings.musicEnabled) {
       m_manager.currentTrack.startMusic(&assets);
     }
     s_manager.enabled = settings.soundEnabled;
     settings_menu.music_enabled_checkbox.checked = settings.musicEnabled;
     settings_menu.sound_enabled_checkbox.checked = settings.soundEnabled;
+    settings_menu.screenshake_enabled_checkbox.checked =
+        settings.screenshakeEnabled;
+  }
+  Game() {
+    settings.loadFromFile("data/settings");
+    ui.setRunner(&this->runner);
+    shop_menu.setRunner(&runner);
+    state = GAME_STATE_MAIN_MENU;
+    assets.loadAssets();
+    loadSettings();
     upgrades.init();
   }
 
@@ -94,9 +99,13 @@ public:
       runner.update(s_manager, state, upgrades, settings.screenshakeEnabled);
       ui.update();
       break;
-    case GAME_STATE_SETTINGS:
-      settings_menu.update(s_manager, &state, &settings);
+    case GAME_STATE_SETTINGS: {
+      bool shouldLoad = false;
+      settings_menu.update(s_manager, &state, &settings, shouldLoad);
+      if (shouldLoad)
+        loadSettings();
       break;
+    }
     case GAME_STATE_DEAD:
       dead_menu.update(GetFrameTime(), s_manager, state, runner, upgrades,
                        inventory);

@@ -226,14 +226,15 @@ public:
       int tX = 0;
       int tY = 0;
 
-      while (true) {
+      int maxtries = 1000;
+      bool enemyDistGood = true;
+      for (int i = 0; i < maxtries; i++) {
         srand(time(0));
         tX = GetRandomValue(1, 18);
         tY = GetRandomValue(1, 18);
         if (!map.get(tX, tY))
           if (Vector2Distance({tX * 32.0f, tY * 32.0f},
                               {(float)p.x, (float)p.y}) > 32 * 3) {
-            bool enemyDistGood = true;
             for (Enemy &e : enemies) {
               if (Vector2Distance({e.getX(), e.getY()},
                                   {tX * 32.0f, tY * 32.0f}) < 32 * 3) {
@@ -243,6 +244,14 @@ public:
             if (enemyDistGood)
               break;
           }
+      }
+      while (!enemyDistGood) {
+        srand(time(0));
+        tX = GetRandomValue(1, 18);
+        tY = GetRandomValue(1, 18);
+        if (!map.get(tX, tY)) {
+          enemyDistGood = true;
+        }
       }
 
       std::cout << tX << ' ' << tY << std::endl;
@@ -291,12 +300,14 @@ public:
 
   void update(SoundManager &s, GameState &state, Upgrades &u,
               bool screenShakeEnabled) {
-    if (freezeFrames > 0 && screenShakeEnabled) {
+    if (freezeFrames > 0) {
       freezeFrames--;
-      screenShake.x += GetRandomValue(-10, 10);
-      screenShake.y += GetRandomValue(-10, 10);
-      cam.offset.x = camoffsetbase.x + screenShake.x;
-      cam.offset.y = camoffsetbase.y + screenShake.y;
+      if (screenShakeEnabled) {
+        screenShake.x += GetRandomValue(-10, 10);
+        screenShake.y += GetRandomValue(-10, 10);
+        cam.offset.x = camoffsetbase.x + screenShake.x;
+        cam.offset.y = camoffsetbase.y + screenShake.y;
+      }
       return;
     } else if (screenShakeEnabled) {
       cam.offset = camoffsetbase;

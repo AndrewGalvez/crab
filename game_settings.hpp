@@ -10,7 +10,7 @@ public:
 
   void saveToFile(const char *fileName) {
     std::ofstream f(fileName);
-    f << musicEnabled << ' ' << soundEnabled << ' ' << screenshakeEnabled;
+    f << musicEnabled << soundEnabled << screenshakeEnabled;
     f.close();
   }
 

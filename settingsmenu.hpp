@@ -28,9 +28,14 @@ private:
   GUIText sound_enabled_text =
       GUIText(10, 80, 25, "Sound Enabled: ", WHITE, false);
 
+  GUIText screenshake_enabled_text =
+      GUIText(10, 110, 25, "Screenshake: ", WHITE, false);
+
 public:
   GUICheckbox music_enabled_checkbox = GUICheckbox(200, 57, 10, 10, false);
   GUICheckbox sound_enabled_checkbox = GUICheckbox(200, 87, 10, 10, false);
+  GUICheckbox screenshake_enabled_checkbox =
+      GUICheckbox(200, 117, 10, 10, false);
 
   void draw(GameAssets *assets, int frame) {
     title_text.draw();
@@ -41,6 +46,9 @@ public:
 
     sound_enabled_text.draw();
     sound_enabled_checkbox.draw();
+
+    screenshake_enabled_text.draw();
+    screenshake_enabled_checkbox.draw();
 
     // buttons
 
@@ -60,8 +68,8 @@ public:
     EndShaderMode();
   }
 
-  void update(SoundManager &s_manager, GameState *state,
-              GameSettings *settings) {
+  void update(SoundManager &s_manager, GameState *state, GameSettings *settings,
+              bool &shouldLoad) {
     if (saveMessageTimer > 0)
       saveMessageTimer--;
 
@@ -77,6 +85,12 @@ public:
       settings->soundEnabled = sound_enabled_checkbox.checked;
     }
 
+    if (screenshake_enabled_checkbox.isMouseOn() &&
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      screenshake_enabled_checkbox.tick();
+      settings->screenshakeEnabled = screenshake_enabled_checkbox.checked;
+    }
+
     if (back_button.isMouseOn() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       s_manager.play("select");
       *state = GAME_STATE_MAIN_MENU;
@@ -86,6 +100,8 @@ public:
       s_manager.play("select");
       saveMessageTimer = 60;
       settings->saveToFile("data/settings");
+      settings->loadFromFile("data/settings");
+      shouldLoad = true;
     }
   }
 };
