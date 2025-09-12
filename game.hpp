@@ -91,7 +91,7 @@ public:
       main_menu.update(s_manager, &state, &should_exit);
       break;
     case GAME_STATE_IN_GAME:
-      runner.update(s_manager, state, upgrades);
+      runner.update(s_manager, state, upgrades, settings.screenshakeEnabled);
       ui.update();
       break;
     case GAME_STATE_SETTINGS:

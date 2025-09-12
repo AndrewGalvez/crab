@@ -289,15 +289,16 @@ public:
     }
   }
 
-  void update(SoundManager &s, GameState &state, Upgrades &u) {
-    if (freezeFrames > 0) {
+  void update(SoundManager &s, GameState &state, Upgrades &u,
+              bool screenShakeEnabled) {
+    if (freezeFrames > 0 && screenShakeEnabled) {
       freezeFrames--;
       screenShake.x += GetRandomValue(-10, 10);
       screenShake.y += GetRandomValue(-10, 10);
       cam.offset.x = camoffsetbase.x + screenShake.x;
       cam.offset.y = camoffsetbase.y + screenShake.y;
       return;
-    } else {
+    } else if (screenShakeEnabled) {
       cam.offset = camoffsetbase;
       screenShake = Vector2Zero();
     }
