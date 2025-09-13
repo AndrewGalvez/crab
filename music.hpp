@@ -12,17 +12,14 @@ public:
   Music &fetch(GameAssets *assets) { return *assets->fetchMusic(name); }
 
   void stopMusic(GameAssets *assets) {
-    StopMusicStream(*assets->fetchMusic(name));
+    PauseMusicStream(*assets->fetchMusic(name));
   }
-
   void startMusic(GameAssets *assets) {
     PlayMusicStream(*assets->fetchMusic(name));
   }
-
   void resumeMusic(GameAssets *assets) {
     ResumeMusicStream(*assets->fetchMusic(name));
   }
-
   void updateMusic(GameAssets *assets) {
     UpdateMusicStream(*assets->fetchMusic(name));
   }

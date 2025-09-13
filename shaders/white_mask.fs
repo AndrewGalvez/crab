@@ -1,12 +1,13 @@
-#version 100
-precision mediump float;
+#version 330 core
+in vec2 fragTexCoord;
+in vec4 fragColor;
+out vec4 finalColor;
+#define TEXTURE2D texture
+#define OUTPUT_COLOR finalColor
 
-varying vec2 fragTexCoord;
-varying vec4 fragColor;
 uniform sampler2D texture0;
 
 void main() {
-    float alpha = texture2D(texture0, fragTexCoord).a;
-    gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
+   float alpha = TEXTURE2D(texture0, fragTexCoord).a;
+   OUTPUT_COLOR = vec4(1.0, 1.0, 1.0, alpha);
 }
-

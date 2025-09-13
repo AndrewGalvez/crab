@@ -1,8 +1,9 @@
-#version 100
-precision mediump float;
-
-varying vec2 fragTexCoord;
-varying vec4 fragColor;
+#version 330 core
+in vec2 fragTexCoord;
+in vec4 fragColor;
+out vec4 finalColor;
+#define TEXTURE2D texture
+#define OUTPUT_COLOR finalColor
 
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
@@ -19,7 +20,7 @@ float blockRandom(vec2 st, float blockSize) {
 }
 
 void main() {
-    vec4 texelColor = texture2D(texture0, fragTexCoord);
+    vec4 texelColor = TEXTURE2D(texture0, fragTexCoord);
     
     vec2 screenCoord = gl_FragCoord.xy;
     
@@ -43,5 +44,5 @@ void main() {
     
     grainedColor = clamp(grainedColor, 0.0, 1.0);
     
-    gl_FragColor = vec4(grainedColor, texelColor.a) * colDiffuse * fragColor;
+    OUTPUT_COLOR = vec4(grainedColor, texelColor.a) * colDiffuse * fragColor;
 }
