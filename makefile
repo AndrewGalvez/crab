@@ -85,7 +85,7 @@ wasm: clean-wasm
 		-s ALLOW_MEMORY_GROWTH=1 \
 		-s ASYNCIFY=1 \
 		--preload-file assets \
-		--preload-file shaders \
+		--preload-file wasm_shaders@shaders \
 		--preload-file data \
 		-o index.html
 
