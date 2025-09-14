@@ -44,10 +44,10 @@ public:
 
 class GoldManager {
 private:
-  std::vector<Gold> golds;
   float spawnChance = 1.0f;
 
 public:
+  std::vector<Gold> golds;
   void draw(GameAssets &assets) {
     for (Gold &g : golds)
       g.draw(assets);

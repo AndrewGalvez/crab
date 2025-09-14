@@ -65,7 +65,7 @@ public:
       break;
     case GAME_STATE_IN_GAME:
       runner.draw(&assets, frameIncrementTimer, frame, upgrades);
-      ui.draw(&assets, frameIncrementTimer);
+      ui.draw(&assets, frameIncrementTimer, runner.getMapRef());
       break;
     case GAME_STATE_SHOP:
       shop_menu.draw(assets, frameIncrementTimer, upgrades);

@@ -199,6 +199,8 @@ public:
     p.update(0, map.size, map);
   }
 
+  GameMap &getMapRef() { return map; }
+
   void reset() {
     p = Player(10, 10, 32, 32);
     currentGun = Gun();

@@ -1,6 +1,8 @@
 #pragma once
 #include "game_assets.hpp"
+#include "game_map.hpp"
 #include "game_runner.hpp"
+#include "gold_manager.hpp"
 #include "gui.hpp"
 #include "raylib.h"
 #include <cmath>
@@ -51,6 +53,32 @@ public:
                   6, RED);
   }
 
+  void draw_minimap(GameMap &map) {
+    // 240 0 80 240
+    // margin 10
+    // 250 x 60 60 (3x map)
+    // below hp bar
+    // hp bar ends at 40 + 108 = ~150, margin 10 160
+    // 250 160 60 60
+
+    DrawRectangle(250, 160, 60, 60, DARKBLUE);
+
+    for (int col = 0; col < map.tile_num; col++) {
+      for (int row = 0; row < map.tile_num; row++) {
+        if (map.renderer[row][col].tx != -1)
+          DrawRectangle(250 + col * 3, 160 + row * 3, 3, 3, WHITE);
+      }
+    }
+
+    DrawRectangle(runner->p.x / map.TILE_SIZE * 3 + 250,
+                  runner->p.y / map.TILE_SIZE * 3 + 160, 3, 3, RED);
+
+    for (Gold &g : runner->gold_manager.golds) {
+      DrawRectangle((int)g.getRect().x / map.TILE_SIZE * 3 + 250,
+                    (int)g.getRect().y / map.TILE_SIZE * 3 + 160, 3, 3, GOLD);
+    }
+  };
+
   void update() {
     std::string ltxt = "Level " + std::to_string(runner->level);
     level_text.setValue(strdup(ltxt.c_str()));
@@ -62,13 +90,14 @@ public:
     healthpotions_text.setValue(strdup(hptxt.c_str()));
   }
 
-  void draw(GameAssets *assets, int frame) {
+  void draw(GameAssets *assets, int frame, GameMap &map) {
     drawBg(assets, frame);
     level_text.draw();
     draw_health_bar();
     draw_gun_cooldown();
     gold_text.draw();
     healthpotions_text.draw();
+    draw_minimap(map);
     DrawTexturePro(*assets->fetchTexture("gold"), {0, 0, 8, 8},
                    {275, 55, 16, 16}, {0, 0}, 0.0f, WHITE);
     DrawTexturePro(*assets->fetchTexture("hpotion"), {0, 0, 8, 8},
