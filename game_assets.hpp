@@ -25,6 +25,7 @@ public:
         LoadTexture("assets/upgrade_icons/FasterProjectile.png");
     textures["u_bulletricochet"] =
         LoadTexture("assets/upgrade_icons/Ricochet.png");
+    textures["tilemap"] = LoadTexture("assets/tilemap.png");
     shaders["grain"] = LoadShader(0, "shaders/grain.fs");
     shaders["whitemask"] = LoadShader(0, "shaders/white_mask.fs");
     musics["menu"] = LoadMusicStream("assets/menu.mp3");

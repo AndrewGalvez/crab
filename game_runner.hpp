@@ -24,7 +24,7 @@ private:
   std::vector<EnemyDeath> enemydeaths = {};
   std::vector<HealthPotionEffect> hpeffects = {};
 
-  GameMap map;
+  GameMap map = GameMap();
   Camera2D cam;
   Vector2 camoffsetbase;
   Vector2 screenShake = {0, 0};
@@ -192,6 +192,7 @@ public:
     cam.rotation = 0.0f;
     cam.zoom = 1.0f;
     map.loadFromFile("data/map");
+    map.loadRenderFromFile("data/maprender");
 
     p.findSpawn(map);
 
@@ -265,7 +266,7 @@ public:
 
   void draw(GameAssets *assets, int frame, int f2, Upgrades &u) {
     BeginMode2D(cam);
-    map.draw();
+    map.draw(assets->fetchTexture("tilemap"));
     p.draw(assets->fetchTexture("crab"), frame, &cam, map.size, freezeFrames,
            assets->fetchShader("whitemask"), u.get("goldmagnet")->getCurrent());
     currentGun.draw();
