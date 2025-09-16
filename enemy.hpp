@@ -3,6 +3,7 @@
 #include "pathfinding.hpp"
 #include "player.hpp"
 #include "raylib.h"
+#include <raymath.h>
 #include <vector>
 
 class Enemy {
@@ -20,7 +21,12 @@ private:
                                   //
   int animY = 0;
 
+  float velFriction = 0.1;
+
 public:
+  int health = 3;
+  Vector2 vel = {0, 0};
+
   Enemy(int startX, int startY) : x((float)startX), y((float)startY) {}
 
   void draw(GameAssets *assets, int frame) {
@@ -87,6 +93,19 @@ public:
   }
 
   void update(float dt, Player &p, std::array<std::array<bool, 20>, 20> &map) {
+    if (vel.x > 0)
+      vel.x -= velFriction;
+    if (vel.x < 0)
+      vel.x += velFriction;
+    if (vel.y > 0)
+      vel.y -= velFriction;
+    if (vel.y < 0)
+      vel.y += velFriction;
+
+    if (abs(vel.x) < velFriction * 1.5)
+      vel.x = 0;
+    if (abs(vel.y) < velFriction * 1.5)
+      vel.y = 0;
     // Update pathfinding timer
     pathfindTimer++;
     if (pathfindTimer >= pathfindInterval) {
@@ -133,8 +152,8 @@ public:
 
     if (distance > 0) {
       // Normalize movement direction
-      float moveX = (dx / distance) * speed * dt;
-      float moveY = (dy / distance) * speed * dt;
+      float moveX = ((dx / distance) * speed * dt) + vel.x;
+      float moveY = ((dy / distance) * speed * dt) + vel.y;
 
       // Calculate new positions
       float newX = x + moveX;
@@ -164,6 +183,7 @@ public:
       }
       // 4. Try smaller movements to "slide" along walls
       else {
+        vel = Vector2Zero();
         // Try half movement
         float halfMoveX = moveX * 0.5f;
         float halfMoveY = moveY * 0.5f;

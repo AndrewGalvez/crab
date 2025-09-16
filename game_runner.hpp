@@ -114,7 +114,11 @@ private:
         Enemy &e = enemies[j];
         if (b.x > e.getX() && b.x < e.getX() + e.getW() && b.y > e.getY() &&
             b.y < e.getY() + e.getH()) {
-          to_erase_enemies.push_back(j);
+          e.health -= 1;
+          e.vel = Vector2Add(e.vel, Vector2Normalize(b.dir) *
+                                        currentGun.knockbackForce);
+          if (e.health == 0)
+            to_erase_enemies.push_back(j);
           to_remove.push_back(i);
           s.play("hit");
         }

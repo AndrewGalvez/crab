@@ -20,6 +20,12 @@ public:
   int baseCooldown = 25;
   int cooldown = baseCooldown;
 
+  float spread = 0.01f;
+  int bulletCount = 1;
+  int bulletDispersion = 0.0f;
+
+  int knockbackForce = 3.0f;
+
   Vector2 mouse;
   Color c = GREEN;
 
