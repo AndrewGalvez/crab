@@ -3,13 +3,12 @@
 #include "utils.hpp"
 
 int main() {
-  SetTraceLogLevel(LOG_WARNING);
-
   InitWindow(600, 450, "Peanut Butter");
 
   SetTargetFPS(60);
 
   SetWindowState(FLAG_WINDOW_RESIZABLE);
+  SetConfigFlags(FLAG_WINDOW_RESIZABLE);
   InitAudioDevice();
 
   RenderTexture2D target = LoadRenderTexture(320, 240);
