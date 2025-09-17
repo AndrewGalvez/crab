@@ -15,7 +15,6 @@ class GameUI {
   GUIText health_text = GUIText(260, 30, 10, "100", WHITE, true);
   GUIText gold_text = GUIText(275 + 20, 55, 16, "0", WHITE, false);
   GUIText healthpotions_text = GUIText(275 + 20, 75, 16, "0", WHITE, false);
-  const Color SAND_COLOR = {0, 0, 0, 0};
 
 public:
   void setRunner(GameRunner *runner) { this->runner = runner; };
@@ -46,21 +45,31 @@ public:
 
   void draw_gun_cooldown() {
     DrawRectangle(275, 40, 40, 10, BLACK);
-    DrawRectangle(277, 42, 36, 6, GREEN);
-    DrawRectangle(277, 42,
-                  36.0f * ((float)runner->currentGun.cooldown /
-                           runner->currentGun.baseCooldown),
-                  6, RED);
+
+    if (runner->currentGun.magBullets != 0) {
+      int barHeight = 8;
+      int startX = 277;
+      int maxWidth = 36;
+      int margin = 1;
+
+      int totalBars = runner->currentGun.magSizeMax;
+      int totalMargins = (totalBars - 1) * margin;
+      int availableWidth = maxWidth - totalMargins;
+      int barWidth = availableWidth / totalBars;
+
+      for (int i = 0; i < runner->currentGun.magBullets; i++) {
+        int x = startX + (i * (barWidth + margin));
+        DrawRectangle(x, 41, barWidth, barHeight, GOLD);
+      }
+    } else {
+      DrawRectangle(277, 41,
+                    runner->currentGun.reloadFrameCurrent /
+                        runner->currentGun.reloadFrames * 36,
+                    8, RED);
+    }
   }
 
   void draw_minimap(GameMap &map) {
-    // 240 0 80 240
-    // margin 10
-    // 250 x 60 60 (3x map)
-    // below hp bar
-    // hp bar ends at 40 + 108 = ~150, margin 10 160
-    // 250 160 60 60
-
     DrawRectangle(250, 160, 60, 60, DARKBLUE);
 
     for (int col = 0; col < map.tile_num; col++) {

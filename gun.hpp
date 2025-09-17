@@ -26,12 +26,19 @@ public:
 
   int knockbackForce = 3.0f;
 
+  int magSizeMax = 8;
+  int magBullets = magSizeMax;
+
+  float reloadFrames = 85;
+  float reloadFrameCurrent = reloadFrames;
+
   Vector2 mouse;
   Color c = GREEN;
+  Color c2 = RED;
 
   void draw() {
     DrawRectanglePro({(float)x, (float)y, (float)w, (float)h}, {(float)radius},
-                     rot, c);
+                     rot, magBullets != 0 ? c : c2);
   }
 
   void updateRot(Camera2D &cam, Player &p) {

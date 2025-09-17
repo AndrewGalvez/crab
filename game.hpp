@@ -36,6 +36,7 @@ private:
 
 public:
   void loadSettings() {
+    settings.loadFromFile("data/settings");
     if (settings.musicEnabled) {
       m_manager.currentTrack.startMusic(&assets);
     }
@@ -46,7 +47,6 @@ public:
         settings.screenshakeEnabled;
   }
   Game() {
-    settings.loadFromFile("data/settings");
     ui.setRunner(&this->runner);
     shop_menu.setRunner(&runner);
     state = GAME_STATE_MAIN_MENU;

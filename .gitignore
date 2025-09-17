@@ -5,3 +5,4 @@ data/
 crab2-linux.zip
 index.*
 raylib_wasm
+build/

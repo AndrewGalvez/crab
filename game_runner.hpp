@@ -2,7 +2,6 @@
 #include "bullet.hpp"
 #include "effect.hpp"
 #include "enemy.hpp"
-#include "game_assets.hpp"
 #include "game_map.hpp"
 #include "game_state.hpp"
 #include "gold_manager.hpp"
@@ -13,8 +12,6 @@
 #include "sound.hpp"
 #include "upgrades.hpp"
 #include <cassert>
-#include <cstdlib>
-#include <iostream>
 #include <raymath.h>
 #include <vector>
 
@@ -36,13 +33,17 @@ private:
   GUIText finishedText2 =
       GUIText(240 / 2, 55, 18, "Return to shop: Q", GREEN, true);
 
-  void shoot(float speed, unsigned int ricochets) {
-    float angleRad = -currentGun.rot * DEG2RAD;
-    Vector2 dir = Vector2Scale({cosf(angleRad), -sinf(angleRad)}, -speed);
-    Vector2 sOffset = Vector2Scale({cosf(angleRad), -sinf(angleRad)}, -40);
-    Vector2 origin = {(float)p.x + p.w / 2.0f, (float)p.y + p.h / 2.0f};
-    Vector2 spawnPos = Vector2Add(origin, sOffset);
-    bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir, ricochets));
+  void shoot(float speed, unsigned int ricochets, SoundManager &s) {
+    if (currentGun.magBullets > 0) {
+      currentGun.magBullets--;
+      float angleRad = -currentGun.rot * DEG2RAD;
+      Vector2 dir = Vector2Scale({cosf(angleRad), -sinf(angleRad)}, -speed);
+      Vector2 sOffset = Vector2Scale({cosf(angleRad), -sinf(angleRad)}, -40);
+      Vector2 origin = {(float)p.x + p.w / 2.0f, (float)p.y + p.h / 2.0f};
+      Vector2 spawnPos = Vector2Add(origin, sOffset);
+      bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir, ricochets));
+      s.play("shoot");
+    }
   }
 
   void update_gold(SoundManager &s, Upgrades &u) {
@@ -60,7 +61,6 @@ private:
   }
 
   void update_hpeffects() {
-
     for (HealthPotionEffect &hpe : hpeffects) {
       hpe.update();
     }
@@ -160,12 +160,19 @@ private:
 
     if (currentGun.cooldown == 0) {
       if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        shoot(currentGun.bSpeed, currentGun.bRicochets);
+        shoot(currentGun.bSpeed, currentGun.bRicochets, s);
         currentGun.cooldown = currentGun.baseCooldown;
-        s.play("shoot");
       }
     } else {
       currentGun.cooldown--;
+    }
+
+    if (currentGun.magBullets == 0) {
+      currentGun.reloadFrameCurrent--;
+      if (currentGun.reloadFrameCurrent <= 0) {
+        currentGun.magBullets = currentGun.magSizeMax;
+        currentGun.reloadFrameCurrent = currentGun.reloadFrames;
+      }
     }
   }
 
