@@ -29,7 +29,7 @@ public:
   int magSizeMax = 8;
   int magBullets = magSizeMax;
 
-  float reloadFrames = 85;
+  float reloadFrames = 185;
   float reloadFrameCurrent = reloadFrames;
 
   Vector2 mouse;
