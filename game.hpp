@@ -25,7 +25,7 @@ private:
   GameRunner runner = GameRunner(inventory);
   MainMenu main_menu;
   SettingsMenu settings_menu;
-  ShopMenu shop_menu;
+  ShopMenu shop_menu = ShopMenu(&runner);
   DeadMenu dead_menu;
 
   MusicManager m_manager;
@@ -49,7 +49,7 @@ public:
   Game() {
     ui.setRunner(&this->runner);
     shop_menu.setRunner(&runner);
-    state = GAME_STATE_MAIN_MENU;
+    state = GAME_STATE_SHOP;
     assets.loadAssets();
     loadSettings();
     upgrades.init();

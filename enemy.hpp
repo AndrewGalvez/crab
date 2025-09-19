@@ -24,7 +24,7 @@ private:
   float velFriction = 0.1;
 
 public:
-  int health = 3;
+  float health = 3.0f;
   Vector2 vel = {0, 0};
 
   Enemy(int startX, int startY) : x((float)startX), y((float)startY) {}

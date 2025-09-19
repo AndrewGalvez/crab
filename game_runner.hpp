@@ -12,6 +12,7 @@
 #include "sound.hpp"
 #include "upgrades.hpp"
 #include <cassert>
+#include <exception>
 #include <raymath.h>
 #include <vector>
 
@@ -114,10 +115,10 @@ private:
         Enemy &e = enemies[j];
         if (b.x > e.getX() && b.x < e.getX() + e.getW() && b.y > e.getY() &&
             b.y < e.getY() + e.getH()) {
-          e.health -= 1;
+          e.health -= currentGun.dmg;
           e.vel = Vector2Add(e.vel, Vector2Normalize(b.dir) *
                                         currentGun.knockbackForce);
-          if (e.health == 0)
+          if (e.health <= 0.0f)
             to_erase_enemies.push_back(j);
           to_remove.push_back(i);
           s.play("hit");
@@ -190,7 +191,8 @@ private:
 
 public:
   Player p = Player(10, 10, 32, 32);
-  Gun currentGun;
+  std::array<Gun, 2> all_guns = {Gun(), LMG()};
+  Gun currentGun = all_guns[0];
   GoldManager gold_manager;
   std::vector<Bullet> bullets;
   int level = 0;
@@ -233,6 +235,8 @@ public:
   }
 
   void startLevel(Upgrades &u) {
+    currentGun.magBullets = currentGun.magSizeMax;
+    currentGun.reloadFrameCurrent = currentGun.reloadFrames;
     level++;
     levelFinished = false;
 
@@ -352,7 +356,6 @@ public:
                                  u.get("goldmultiplier")->getCurrent());
       enemydeaths.push_back(EnemyDeath(e.getX(), e.getY()));
       enemies.erase(enemies.begin() + i);
-      freezeFrames = 30;
     }
 
     if (p.health <= 0 && !dead) {

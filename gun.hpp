@@ -5,6 +5,7 @@
 #include "utils.hpp"
 #include <cmath>
 #include <raymath.h>
+#include <string>
 
 class Gun {
 public:
@@ -20,11 +21,13 @@ public:
   int baseCooldown = 25;
   int cooldown = baseCooldown;
 
+  float dmg = 1.0f;
+
   float spread = 0.01f;
   int bulletCount = 1;
   int bulletDispersion = 0.0f;
 
-  int knockbackForce = 3.0f;
+  float knockbackForce = 3.0f;
 
   int magSizeMax = 8;
   int magBullets = magSizeMax;
@@ -36,12 +39,19 @@ public:
   Color c = GREEN;
   Color c2 = RED;
 
-  void draw() {
+  std::string displayName = "default";
+
+  int cost = 0;
+
+  bool owned = true;
+
+public:
+  virtual void draw() {
     DrawRectanglePro({(float)x, (float)y, (float)w, (float)h}, {(float)radius},
                      rot, magBullets != 0 ? c : c2);
   }
 
-  void updateRot(Camera2D &cam, Player &p) {
+  virtual void updateRot(Camera2D &cam, Player &p) {
     Vector2 mousePos = GetScreenMousePos(cam);
     mouse = mousePos;
 
@@ -53,14 +63,28 @@ public:
     rot = std::fmod(angle + 360.0f, 360.0f);
   }
 
-  void focusOn(int cX, int cY, int r) {
+  virtual void focusOn(int cX, int cY, int r) {
     x = cX;
     y = cY;
     this->radius = r;
   }
 
-  void applyUpgrades(Upgrades &upgrades) {
+  virtual void applyUpgrades(Upgrades &upgrades) {
     this->bSpeed = upgrades.get("bulletspeed")->getCurrent();
     this->bRicochets = upgrades.get("bulletricochet")->getCurrent();
+  }
+};
+
+class LMG : public Gun {
+public:
+  LMG() : Gun() {
+    this->baseCooldown = 5;
+    this->dmg = 0.3;
+    this->magSizeMax = 100;
+    this->displayName = "LMG";
+    this->knockbackForce = 1.0;
+    this->reloadFrames = 600;
+    this->cost = 50;
+    this->owned = false;
   }
 };

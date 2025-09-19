@@ -3,10 +3,10 @@
 #include "game_runner.hpp"
 #include "game_state.hpp"
 #include "gui.hpp"
+#include "gun.hpp"
 #include "inventory.hpp"
 #include "sound.hpp"
 #include "upgrades.hpp"
-#include <cmath>
 #include <memory.h>
 #include <raylib.h>
 #include <string>
@@ -19,6 +19,182 @@ public:
   GUIText name_text = GUIText(240, 130, 18, "Gold Multiplier", WHITE, true);
   GUIText cost_text = GUIText(240, 150, 18, "Cost: 0", WHITE, true);
   GUIText current_text = GUIText(240, 170, 18, "Current: 1.00", WHITE, true);
+};
+
+enum ShopState { SHOP_STATE_UPGRADES, SHOP_STATE_GUNS };
+
+class ShopMenuUpgrades {
+public:
+  GUIButton button_left = GUIButton(
+      240 - 32 - 30, 60 + 32 - 12, 24, 24, GRAY, DARKGRAY, false,
+      GUIText(240 - 32 - 30 + 12, 60 + 33 - 12, 24, "([", BLACK, true), false);
+
+  GUIButton button_right = GUIButton(
+      240 + 32 + 6, 60 + 32 - 12, 24, 24, GRAY, DARKGRAY, false,
+      GUIText(240 + 32 + 6 + 12, 60 + 33 - 12, 24, "])", BLACK, true), false);
+
+  GUIButton button_buy = GUIButton(240 - 32, 200, 64, 32, GRAY, DARKGRAY, false,
+                                   GUIText(240, 200, 30, "Buy", BLACK, true));
+  CurrentUpgrade current_upgrade;
+
+  void draw(GameAssets &assets) {
+    current_upgrade.name_text.draw();
+    current_upgrade.cost_text.draw();
+    current_upgrade.current_text.draw();
+    button_left.draw();
+    button_right.draw();
+    Texture2D *tex = assets.fetchTexture(current_upgrade.texid.c_str());
+
+    DrawTexturePro(*tex, {0, 0, 16, 16}, {240 - 32, 60, 64, 64}, {0, 0}, 0.0f,
+                   WHITE);
+
+    grain(assets);
+
+    button_buy.draw();
+
+    EndShaderMode();
+  }
+
+  void update(Upgrades &upgrades, Inventory &inv, SoundManager &s_manager) {
+    Upgrade *u = upgrades.get(current_upgrade.index);
+
+    if (!u)
+      return;
+
+    static std::string untxt;
+    untxt = u->getName();
+    current_upgrade.name_text.setValue(untxt.c_str());
+
+    static std::string uctxt;
+    uctxt = "Cost: " + std::to_string(u->getCost());
+    current_upgrade.cost_text.setValue(uctxt.c_str());
+
+    static std::string ucrtxt;
+    ucrtxt = "Current: " + std::to_string(u->getCurrent());
+    ucrtxt.pop_back();
+    ucrtxt.pop_back();
+    ucrtxt.pop_back();
+    current_upgrade.current_text.setValue(ucrtxt.c_str());
+
+    button_buy.setColor(u->getCost() <= inv.getGold() ? GREEN : RED);
+    button_buy.setHoverColor(u->getCost() <= inv.getGold() ? DARKGREEN : RED);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      if (button_left.isMouseOn() || button_right.isMouseOn()) {
+        s_manager.play("select");
+
+        Upgrade *un = nullptr;
+
+        if (button_left.isMouseOn())
+          un = upgrades.get(upgrades.getPrev(current_upgrade.index));
+        else
+          un = upgrades.get(upgrades.getNext(current_upgrade.index));
+
+        if (!un) {
+          return;
+        }
+
+        current_upgrade.index = un->getId();
+        current_upgrade.texid = un->getTexID();
+        current_upgrade.name_text.setValue(un->getName().c_str());
+      }
+
+      if (button_buy.isMouseOn() && u->getCost() <= inv.getGold()) {
+        s_manager.play("select");
+        u->buy(inv);
+      }
+    }
+  }
+};
+
+class GunDisplay {
+  int x, y, w, h;
+  Gun &g;
+  GUIText nametxt;
+  GUIText costtxt;
+  GUIText ownedtxt;
+  GUIButton buybutton;
+  GUIButton usebutton;
+  bool equipped = false;
+
+public:
+  GunDisplay(int x, int y, int w, int h, Gun &g)
+      : x(x), y(y), w(w), h(h), g(g),
+        nametxt(x, y, 16, g.displayName.c_str(), WHITE, false),
+        buybutton(x + w, y, w / 2, 20, GRAY, DARKGRAY, false,
+                  GUIText(x + w + 1, y, 16, "Buy", BLACK, false), false),
+        usebutton(x + w, y, w / 2, 20, GRAY, DARKGRAY, false,
+                  GUIText(x + w + 1, y, 16, "Use", BLACK, false), false),
+
+        costtxt(x + w / 4, y + 20, 16,
+                strdup(std::string("Cost: " + std::to_string(g.cost)).c_str()),
+                WHITE, false),
+        ownedtxt(x + w / 4, y + 40, 16, g.owned ? "Owned" : "Not Owned",
+                 g.owned ? GREEN : RED, false) {}
+
+  void draw(GameAssets &assets) {
+    nametxt.draw();
+    costtxt.draw();
+    ownedtxt.draw();
+    grain(assets);
+    if (!g.owned)
+      buybutton.draw();
+    else if (!equipped)
+      usebutton.draw();
+    EndShaderMode();
+  }
+
+  void update(GameRunner *r, SoundManager &s) {
+    buybutton.setColor(r->inv.getGold() >= g.cost ? GRAY : RED);
+    buybutton.setHoverColor(r->inv.getGold() >= g.cost ? DARKGRAY : RED);
+    equipped = r->currentGun.displayName == g.displayName;
+    nametxt.setColor(equipped ? GOLD : WHITE);
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      if (!g.owned) {
+        if (buybutton.isMouseOn()) {
+          if (r->inv.getGold() >= g.cost) {
+            r->currentGun = g;
+            r->inv.removeGold(g.cost);
+            g.owned = true;
+            ownedtxt.setColor(GREEN);
+            ownedtxt.setValue("Owned");
+          }
+          s.play("select");
+        }
+      } else if (!equipped) {
+        if (usebutton.isMouseOn()) {
+          r->currentGun = g;
+          s.play("select");
+        }
+      }
+    }
+  }
+};
+
+class ShopMenuGuns {
+public:
+  ShopMenuGuns() : ShopMenuGuns(nullptr) {};
+  std::vector<GunDisplay> gundisplays = {};
+  ShopMenuGuns(GameRunner *r) {
+    if (r == nullptr)
+      return;
+    int y = 50;
+    for (Gun &g : r->all_guns) {
+      gundisplays.emplace_back(GunDisplay(180, y, 60, 24, g));
+      y += 60;
+    }
+  }
+
+  void draw(GameRunner *r, GameAssets &assets) {
+    for (GunDisplay &gd : gundisplays) {
+      gd.draw(assets);
+    }
+  }
+  void update(GameRunner *r, SoundManager &s) {
+    for (GunDisplay &g : gundisplays) {
+      g.update(r, s);
+    }
+  };
 };
 
 class ShopMenu {
@@ -42,17 +218,16 @@ private:
       GUIButton(120, 130, 32, 16, GRAY, DARKGRAY, false,
                 GUIText(122, 130, 16, "Buy", BLACK, false));
 
-  GUIButton button_left = GUIButton(
-      240 - 32 - 30, 60 + 32 - 12, 24, 24, GRAY, DARKGRAY, false,
-      GUIText(240 - 32 - 30 + 12, 60 + 33 - 12, 24, "([", BLACK, true), false);
+  GUIButton upgradesmenu_button =
+      GUIButton(178, 5, 124, 16, GRAY, DARKGRAY, false,
+                GUIText(178 + 124 / 2, 4, 16, "Upgrades", BLACK, true));
+  GUIButton gunsmenu_button =
+      GUIButton(178, 25, 124, 16, GRAY, DARKGRAY, false,
+                GUIText(178 + 124 / 2, 25, 16, "Guns", BLACK, true));
 
-  GUIButton button_right = GUIButton(
-      240 + 32 + 6, 60 + 32 - 12, 24, 24, GRAY, DARKGRAY, false,
-      GUIText(240 + 32 + 6 + 12, 60 + 33 - 12, 24, "])", BLACK, true), false);
+  ShopState state = SHOP_STATE_UPGRADES;
 
-  GUIButton button_buy = GUIButton(240 - 32, 200, 64, 32, GRAY, DARKGRAY, false,
-                                   GUIText(240, 200, 30, "Buy", BLACK, true));
-  CurrentUpgrade current_upgrade;
+  ShopMenuUpgrades upgradesmenu;
 
   GameRunner *runner;
 
@@ -60,12 +235,15 @@ private:
   std::string hptxt;
 
 public:
-  ShopMenu() {
-    current_upgrade.index = "goldmultiplier";
-    current_upgrade.texid = "u_goldmultiplier";
-  }
-
+  ShopMenuGuns gunsmenu;
   void setRunner(GameRunner *runner) { this->runner = runner; }
+  ShopMenu() : ShopMenu(nullptr) {};
+  ShopMenu(GameRunner *runner) {
+    upgradesmenu.current_upgrade.index = "goldmultiplier";
+    upgradesmenu.current_upgrade.texid = "u_goldmultiplier";
+    setRunner(runner);
+    gunsmenu = ShopMenuGuns(this->runner);
+  }
 
   void draw_health_bar() {
     int x = 15;
@@ -93,15 +271,10 @@ public:
     DrawTexturePro(*assets.fetchTexture("hpotion"), {0, 0, 8, 8},
                    {120, 110, 16, 16}, {0, 0}, 0.0f, WHITE);
     DrawText("=", 120 + 16 + 2, 110, 22, WHITE);
+    DrawText("5", 120 + 16 + 2 + MeasureText("5", 16) + 2, 110, 16, WHITE);
 
     int x = 150;
     int y = 116;
-    for (int i = 0; i < 5; i++) {
-      DrawTexturePro(*assets.fetchTexture("gold"), {0, 0, 8, 8},
-                     {(float)x, (float)y, 8, 8}, {0, 0}, 0.0f, WHITE);
-      x += 8;
-      y += i % 2 == 1 ? 2 : -2;
-    }
 
     if (hpotion_button.isMouseOn())
       hpotions_tooltip.draw();
@@ -119,39 +292,29 @@ public:
     draw_hpotion_buy(assets);
   }
 
-  void draw_upgrades(GameAssets &assets, Upgrades &upgrades) {
-    current_upgrade.name_text.draw();
-    current_upgrade.cost_text.draw();
-    current_upgrade.current_text.draw();
-    button_left.draw();
-    button_right.draw();
-    Texture2D *tex = assets.fetchTexture(current_upgrade.texid.c_str());
-
-    DrawTexturePro(*tex, {0, 0, 16, 16}, {240 - 32, 60, 64, 64}, {0, 0}, 0.0f,
-                   WHITE);
+  void draw_current(GameAssets &assets) {
+    switch (state) {
+    case SHOP_STATE_UPGRADES:
+      upgradesmenu.draw(assets);
+      break;
+    case SHOP_STATE_GUNS:
+      gunsmenu.draw(runner, assets);
+      break;
+    }
   }
 
   void draw(GameAssets &assets, int frame, Upgrades &upgrades) {
-    Shader *grainShader = assets.fetchShader("grain");
-    int timeLoc = GetShaderLocation(*grainShader, "time");
-    int resLoc = GetShaderLocation(*grainShader, "resolution");
-
-    float time = floor(GetTime() * 9);
-    Vector2 res = {320, 240};
-
-    SetShaderValue(*grainShader, timeLoc, &time, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(*grainShader, resLoc, &res, SHADER_UNIFORM_VEC2);
-
-    BeginShaderMode(*grainShader);
+    grain(assets);
 
     finish_button.draw();
     main_menu_button.draw();
-    button_buy.draw();
     hpotion_button.draw();
+    upgradesmenu_button.draw();
+    gunsmenu_button.draw();
     DrawRectangle(10, 110, 100, 115, DARKBLUE);
     EndShaderMode();
 
-    draw_upgrades(assets, upgrades);
+    draw_current(assets);
 
     draw_player_stuff(assets, frame);
     draw_inventory(assets);
@@ -164,57 +327,13 @@ public:
     hptxt = std::to_string(inv.gethPotions());
     hpotions_text.setValue(hptxt.c_str());
 
-    Upgrade *u = upgrades.get(current_upgrade.index);
-
-    if (!u)
-      return;
-
-    static std::string untxt;
-    untxt = u->getName();
-    current_upgrade.name_text.setValue(untxt.c_str());
-
-    static std::string uctxt;
-    uctxt = "Cost: " + std::to_string(u->getCost());
-    current_upgrade.cost_text.setValue(uctxt.c_str());
-
-    static std::string ucrtxt;
-    ucrtxt = "Current: " + std::to_string(u->getCurrent());
-    ucrtxt.pop_back();
-    ucrtxt.pop_back();
-    ucrtxt.pop_back();
-    current_upgrade.current_text.setValue(ucrtxt.c_str());
-
-    button_buy.setColor(u->getCost() <= inv.getGold() ? GREEN : RED);
-    button_buy.setHoverColor(u->getCost() <= inv.getGold() ? DARKGREEN : RED);
+    upgradesmenu.update(upgrades, inv, s_manager);
+    gunsmenu.update(runner, s_manager);
 
     hpotion_button.setColor(5 <= inv.getGold() ? GREEN : RED);
     hpotion_button.setHoverColor(5 <= inv.getGold() ? GREEN : RED);
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-      if (button_left.isMouseOn() || button_right.isMouseOn()) {
-        s_manager.play("select");
-
-        Upgrade *un = nullptr;
-
-        if (button_left.isMouseOn())
-          un = upgrades.get(upgrades.getPrev(current_upgrade.index));
-        else
-          un = upgrades.get(upgrades.getNext(current_upgrade.index));
-
-        if (!un) {
-          return;
-        }
-
-        current_upgrade.index = un->getId();
-        current_upgrade.texid = un->getTexID();
-        current_upgrade.name_text.setValue(un->getName().c_str());
-      }
-
-      if (button_buy.isMouseOn() && u->getCost() <= inv.getGold()) {
-        s_manager.play("select");
-        u->buy(inv);
-      }
-
       if (hpotion_button.isMouseOn() && 5 <= inv.getGold()) {
         s_manager.play("select");
         inv.removeGold(5);
@@ -229,6 +348,15 @@ public:
       if (main_menu_button.isMouseOn()) {
         s_manager.play("select");
         state = GAME_STATE_MAIN_MENU;
+      }
+
+      if (gunsmenu_button.isMouseOn()) {
+        s_manager.play("select");
+        this->state = SHOP_STATE_GUNS;
+      }
+      if (upgradesmenu_button.isMouseOn()) {
+        s_manager.play("select");
+        this->state = SHOP_STATE_UPGRADES;
       }
     }
   }

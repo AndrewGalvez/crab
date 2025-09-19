@@ -1,4 +1,5 @@
 #pragma once
+#include "game_assets.hpp"
 #include "raylib.h"
 #include <cmath>
 
@@ -43,4 +44,18 @@ inline int dist(Vector2 a, Vector2 b) {
   int d = a.y - b.y;
 
   return (c * c + d * d);
+}
+
+inline void grain(GameAssets &assets) {
+  Shader *grainShader = assets.fetchShader("grain");
+  int timeLoc = GetShaderLocation(*grainShader, "time");
+  int resLoc = GetShaderLocation(*grainShader, "resolution");
+
+  float time = floor(GetTime() * 9);
+  Vector2 res = {320, 240};
+
+  SetShaderValue(*grainShader, timeLoc, &time, SHADER_UNIFORM_FLOAT);
+  SetShaderValue(*grainShader, resLoc, &res, SHADER_UNIFORM_VEC2);
+
+  BeginShaderMode(*grainShader);
 }

@@ -56,9 +56,13 @@ public:
       int totalMargins = (totalBars - 1) * margin;
       int availableWidth = maxWidth - totalMargins;
       int barWidth = availableWidth / totalBars;
+      if (barWidth == 0)
+        barWidth = 1;
 
       for (int i = 0; i < runner->currentGun.magBullets; i++) {
         int x = startX + (i * (barWidth + margin));
+        if (x > 275 + 40)
+          break;
         DrawRectangle(x, 41, barWidth, barHeight, GOLD);
       }
     } else {
