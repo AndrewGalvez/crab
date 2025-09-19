@@ -49,7 +49,7 @@ public:
   Game() {
     ui.setRunner(&this->runner);
     shop_menu.setRunner(&runner);
-    state = GAME_STATE_SHOP;
+    state = GAME_STATE_MAIN_MENU;
     assets.loadAssets();
     loadSettings();
     upgrades.init();
