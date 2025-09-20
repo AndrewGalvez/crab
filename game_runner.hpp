@@ -12,7 +12,6 @@
 #include "sound.hpp"
 #include "upgrades.hpp"
 #include <cassert>
-#include <exception>
 #include <raymath.h>
 #include <vector>
 
@@ -37,13 +36,23 @@ private:
   void shoot(float speed, unsigned int ricochets, SoundManager &s) {
     if (currentGun.magBullets > 0) {
       currentGun.magBullets--;
-      float angleRad = -currentGun.rot * DEG2RAD;
-      Vector2 dir = Vector2Scale({cosf(angleRad), -sinf(angleRad)}, -speed);
-      Vector2 sOffset = Vector2Scale({cosf(angleRad), -sinf(angleRad)}, -40);
-      Vector2 origin = {(float)p.x + p.w / 2.0f, (float)p.y + p.h / 2.0f};
-      Vector2 spawnPos = Vector2Add(origin, sOffset);
-      bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir, ricochets));
-      s.play("shoot");
+      for (int i = 0; i < currentGun.bulletCount; i++) {
+        float angleRad = -currentGun.rot * DEG2RAD +
+                         (GetRandomValue(currentGun.spread * 1000,
+                                         -currentGun.spread * 1000) /
+                          1000.0f);
+        float startAngle =
+            angleRad + ((i - 1) * (((0 - currentGun.bulletDegrees) * 2) /
+                                   currentGun.bulletCount));
+        Vector2 dir =
+            Vector2Scale({cosf(startAngle), -sinf(startAngle)}, -speed);
+        Vector2 sOffset = Vector2Scale({cosf(angleRad), -sinf(angleRad)}, -40);
+        Vector2 origin = {(float)p.x + p.w / 2.0f + currentGun.w / 2.0f,
+                          (float)p.y + p.h / 2.0f + currentGun.w / 2.0f};
+        Vector2 spawnPos = Vector2Add(origin, sOffset);
+        bullets.push_back(Bullet(spawnPos.x, spawnPos.y, 2, dir, ricochets));
+        s.play("shoot");
+      }
     }
   }
 
@@ -88,6 +97,11 @@ private:
 
     for (int i = 0; i < bullets.size(); i++) {
       Bullet &b = bullets[i];
+      if (b.distTraveled > currentGun.bMaxDist &&
+          currentGun.bMaxDist != -1.0f) {
+        to_remove.push_back(i);
+        continue;
+      }
       int bx = b.x / map.TILE_SIZE;
       int by = b.y / map.TILE_SIZE;
       b.move();
@@ -191,7 +205,7 @@ private:
 
 public:
   Player p = Player(10, 10, 32, 32);
-  std::array<Gun, 2> all_guns = {Gun(), LMG()};
+  std::array<Gun, 3> all_guns = {Gun(), LMG(), Shotgun()};
   Gun currentGun = all_guns[0];
   GoldManager gold_manager;
   std::vector<Bullet> bullets;

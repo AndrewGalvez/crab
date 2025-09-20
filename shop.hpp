@@ -120,10 +120,10 @@ public:
   GunDisplay(int x, int y, int w, int h, Gun &g)
       : x(x), y(y), w(w), h(h), g(g),
         nametxt(x, y, 16, g.displayName.c_str(), WHITE, false),
-        buybutton(x + w, y, w / 2, 20, GRAY, DARKGRAY, false,
-                  GUIText(x + w + 1, y, 16, "Buy", BLACK, false), false),
-        usebutton(x + w, y, w / 2, 20, GRAY, DARKGRAY, false,
-                  GUIText(x + w + 1, y, 16, "Use", BLACK, false), false),
+        buybutton(x + w * 1.5, y, w / 2, 20, GRAY, DARKGRAY, false,
+                  GUIText(x + w * 1.5 + 1, y, 16, "Buy", BLACK, false), false),
+        usebutton(x + w * 1.5, y, w / 2, 20, GRAY, DARKGRAY, false,
+                  GUIText(x + w * 1.5 + 1, y, 16, "Use", BLACK, false), false),
 
         costtxt(x + w / 4, y + 20, 16,
                 strdup(std::string("Cost: " + std::to_string(g.cost)).c_str()),

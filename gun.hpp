@@ -18,14 +18,15 @@ public:
 
   float bSpeed = 5.0f;
   float bRicochets = 0.0f;
+  float bMaxDist = -1.0f;
   int baseCooldown = 25;
   int cooldown = baseCooldown;
 
   float dmg = 1.0f;
 
-  float spread = 0.01f;
+  float spread = 0.0f;
   int bulletCount = 1;
-  int bulletDispersion = 0.0f;
+  float bulletDegrees = 0.0f;
 
   float knockbackForce = 3.0f;
 
@@ -86,5 +87,26 @@ public:
     this->reloadFrames = 600;
     this->cost = 50;
     this->owned = false;
+    this->spread = 0.1f;
+    this->bulletCount = 1;
+    this->bulletDegrees = 0;
+  }
+};
+
+class Shotgun : public Gun {
+public:
+  Shotgun() : Gun() {
+    this->baseCooldown = 40;
+    this->dmg = 0.5;
+    this->magSizeMax = 4;
+    this->displayName = "Shotgun";
+    this->knockbackForce = 1.0f;
+    this->reloadFrames = 150;
+    this->cost = 50;
+    this->owned = false;
+    this->spread = 0.0f;
+    this->bulletCount = 3;
+    this->bulletDegrees = 0.4;
+    this->bMaxDist = 30;
   }
 };
