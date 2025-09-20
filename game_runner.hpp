@@ -230,6 +230,8 @@ public:
 
   void reset() {
     p = Player(10, 10, 32, 32);
+    enemies = {};
+    enemydeaths = {};
     currentGun = Gun();
     gold_manager = GoldManager();
     bullets.clear();
