@@ -1,7 +1,7 @@
 game
 obj/
 editor
-data/
+data/settings
 crab2-linux.zip
 index.*
 raylib_wasm
