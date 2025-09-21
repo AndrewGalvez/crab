@@ -182,6 +182,8 @@ private:
       currentGun.cooldown--;
     }
 
+    if (IsKeyPressed(KEY_R))
+      currentGun.magBullets = 0;
     if (currentGun.magBullets == 0) {
       currentGun.reloadFrameCurrent--;
       if (currentGun.reloadFrameCurrent <= 0) {
