@@ -2,12 +2,12 @@
 class Inventory {
 private:
   int gold = 0;
-  int hPotions = 2; // starting amount
+  int hPotions = 5; // starting amount
 
 public:
   void reset() {
     gold = 0;
-    hPotions = 2;
+    hPotions = 5;
   }
 
   void setGold(int amount) { gold = amount; }
