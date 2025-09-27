@@ -253,8 +253,7 @@ public:
   }
 
   void startLevel(Upgrades &u) {
-    currentGun.magBullets = currentGun.magSizeMax;
-    currentGun.reloadFrameCurrent = currentGun.reloadFrames;
+    currentGun.magBullets = currentGun.magSizeMax + 1;
     level++;
     levelFinished = false;
 
