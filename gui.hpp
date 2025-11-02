@@ -1,12 +1,14 @@
 #pragma once
 #include "raylib.h"
 #include <cmath>
+#include <raymath.h>
 
 class GUIText {
 private:
   int x;
   int y;
   int fs;
+  Vector2 offset = Vector2Zero();
   const char *value;
   Color clr;
   bool draw_centered;
@@ -19,7 +21,7 @@ public:
 
   void draw() {
     int nx = draw_centered ? x - MeasureText(value, fs) / 2 : x;
-    DrawText(value, nx, y, fs, clr);
+    DrawText(value, nx + offset.x, y + offset.y, fs, clr);
   }
 
   void setPos(int x, int y) {
@@ -34,6 +36,8 @@ public:
   void setDrawCentered(bool x) { draw_centered = x; }
 
   void setValue(const char *n) { value = n; }
+
+  void setOffset(Vector2 n) { offset = n; }
 };
 
 class GUIButton {

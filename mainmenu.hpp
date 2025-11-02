@@ -4,6 +4,7 @@
 #include "gui.hpp"
 #include "sound.hpp"
 #include <raylib.h>
+
 class MainMenu {
 private:
   GUIText title_text =
@@ -52,7 +53,8 @@ public:
                    {225, 0, 16 * 4, 16 * 4}, {0, 0}, 0.0f, WHITE);
   };
 
-  void update(SoundManager &s_manager, GameState *state, bool **should_exit) {
+  void update(SoundManager &s_manager, GameState *state, bool **should_exit,
+              int time) {
     if ((new_game_button.isMouseOn()) &&
         IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       *state = GAME_STATE_IN_GAME;
@@ -67,5 +69,10 @@ public:
       *state = GAME_STATE_SETTINGS;
       s_manager.play("select");
     }
+
+    float bobAmount = 8.0f;
+    float bobSpeed = 0.08f; // radians per second
+    title_text.setOffset({0, bobAmount * std::sin(time * bobSpeed)});
+    develop_text.setOffset({0, bobAmount * std::sin(time * bobSpeed)});
   };
 };

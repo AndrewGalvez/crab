@@ -33,6 +33,7 @@ private:
 
   int frame = 0;
   int frameIncrementTimer = 0;
+  int totalFrames = 0;
 
 public:
   void loadSettings() {
@@ -78,6 +79,7 @@ public:
 
   void update(bool *should_exit) {
     frame++;
+    totalFrames++;
     if (frame > 12) {
       frameIncrementTimer++;
       frame = 0;
@@ -93,7 +95,7 @@ public:
 
     switch (state) {
     case GAME_STATE_MAIN_MENU:
-      main_menu.update(s_manager, &state, &should_exit);
+      main_menu.update(s_manager, &state, &should_exit, (float)totalFrames);
       break;
     case GAME_STATE_IN_GAME:
       runner.update(s_manager, state, upgrades, settings.screenshakeEnabled);
